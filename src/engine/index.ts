@@ -12,3 +12,7 @@ export * from './strategy/oracle';
 export * from './strategy/chart';
 export * from './strategy/reasons';
 export * from './strategy/drill';
+export * from './counting/systems';
+export * from './counting/count';
+export * from './counting/countDrill';
+export * from './counting/trueCountDrill';

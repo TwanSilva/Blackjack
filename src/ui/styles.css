@@ -195,7 +195,70 @@ ul { list-style: none; margin: 0; padding: 0; }
 .legend li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .swatch { width: 40px; flex: none; }
 
+/* Option rows with a detail line */
+.row-text { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; }
+.path-row:disabled { opacity: 0.6; }
+.center-text { text-align: center; }
+
+/* Extra card sizes */
+.card-xl { width: 170px; height: 244px; border-radius: 20px; }
+.card-xl .card-rank { top: 12px; left: 16px; font-size: 40px; }
+.card-big { width: 130px; height: 187px; border-radius: 16px; }
+.card-big .card-rank { top: 10px; left: 12px; font-size: 30px; }
+.card-medium { width: 52px; height: 75px; border-radius: 9px; }
+.card-medium .card-rank { top: 4px; left: 6px; font-size: 15px; }
+.card-medium .card-suit { margin-top: 12px; }
+.hand-row.center { justify-content: center; }
+.hand-row.tight { gap: 5px; }
+
+/* Count drill */
+.stepper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 8px; }
+.stepper .icon-btn { font-size: 22px; font-weight: 700; }
+.count-stage { display: flex; justify-content: center; min-height: 244px; align-items: center; }
+.count-stage .card { animation: pop var(--fast) ease-out; }
+.table-flash { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.table-row { display: flex; flex-direction: column; gap: 4px; }
+.count-readout { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.big-count { font-size: 44px; font-weight: 700; line-height: 1.1; }
+.hint { text-align: center; }
+.tap-result { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 500; min-height: 20px; }
+.tap-result.ok { color: var(--correct); }
+.tap-result.bad { color: var(--wrong); }
+.count-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.feedback.ok { border-color: var(--correct); }
+.good-icon { width: 34px; height: 34px; border-radius: 50%; background: rgba(61, 214, 140, 0.15); color: var(--correct); display: grid; place-items: center; flex: none; }
+.review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 10px 6px; }
+.review-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 10px; padding: 3px 0; }
+.review-cell .rc { font-size: 13px; font-weight: 700; }
+.review-cell .note { font-size: 11px; color: var(--wrong); }
+.review-cell.bad { outline: 1px solid var(--wrong); }
+.review-rounds { display: flex; flex-direction: column; gap: 10px; }
+.review-round { display: flex; flex-direction: column; gap: 6px; background: var(--surface); border-radius: 14px; padding: 10px 12px; }
+
+/* Number pad */
+.numpad { display: flex; flex-direction: column; gap: 10px; }
+.np-display { display: flex; justify-content: space-between; align-items: baseline; background: var(--surface); border-radius: 14px; padding: 10px 16px; }
+.np-value { font-size: 32px; font-weight: 700; }
+.np-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.np-key {
+  min-height: 52px; border-radius: 14px; border: 0; background: var(--surface); color: var(--text);
+  font-size: 22px; font-weight: 700; display: grid; place-items: center;
+}
+
+/* True count drill */
+.givens { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.given { background: var(--surface); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 2px; }
+.given-value { font-size: 36px; font-weight: 700; line-height: 1.1; }
+.deck-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.deck-grid .pill { padding: 0; }
+.tray { width: 100%; max-width: 360px; align-self: center; height: auto; }
+.tray-box { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linejoin: round; }
+.tray-stack { fill: #2a2a2e; }
+.tray-edges line { stroke: #45454c; stroke-width: 1; }
+.tray-label { fill: var(--muted); font-size: 13px; font-family: inherit; }
+
 @media (prefers-reduced-motion: reduce) {
+  .count-stage .card { animation: none; }
   :root { --fast: 0ms; }
   .flash { animation: none; }
 }

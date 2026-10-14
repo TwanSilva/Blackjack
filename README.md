@@ -2,11 +2,16 @@
 
 A personal blackjack trainer that runs in the browser. Spec: `UX Blackjack.md` (rules, strategy) and `UI Blackjack.md` (looks).
 
-Built so far: build steps 1 to 3.
+Built so far: build steps 1 to 4.
 
 1. **Game engine** in `src/engine/`: cards, shoe with cut card, hand values, dealer play (H17/S17), available actions, payouts. No UI code.
 2. **Strategy oracle** in `src/engine/strategy/`: `bestPlay(hand, upcard, rules, trueCount?)` returns the best action and the EV of every allowed option.
 3. **Strategy drill and chart** in `src/ui/`: the drill, wrong-answer feedback, and the corner basic strategy chart. Every answer, chart cell and "why" sentence comes from the engine.
+4. **Hi-Lo counting** in `src/engine/counting/`. The count system is a data table, so other systems can be added as data. It includes the running count, decks remaining, the true count (round down by default) and a count tracker. The drills:
+   - **Count drill:** single cards, two-card hands, a full table, or the 52-card deck test. Learning mode has you tap +1/0/−1 for each card; test mode has you enter the count at the end. Four speeds, adjustable to 0.1 s. A review screen follows each drill.
+   - **True count drill:** the decks remaining are given, the exact cards remaining are given, or you read them from a picture of the discard tray. Positions are dealt from a real shuffled shoe.
+
+The UI is split into `src/ui/app.ts` (the shell: chart overlay, keys, pausing) and one file per screen in `src/ui/screens/`. Opening the chart, or switching away from the tab, pauses any running drill.
 
 ## How strategy is computed
 

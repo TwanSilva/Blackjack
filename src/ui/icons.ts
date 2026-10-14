@@ -7,6 +7,8 @@ export const icon = {
   back: () => stroke('<path d="M15 5l-7 7 7 7"/>'),
   close: () => stroke('<path d="M6 6l12 12M18 6L6 18"/>'),
   grid: () => stroke('<rect x="3.5" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="16" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="3.5" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="16" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="3.5" y="16" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="16" width="4.5" height="4.5" rx="1"/><rect x="16" y="16" width="4.5" height="4.5" rx="1"/>'),
+  chevron: () => stroke('<path d="M9 5l7 7-7 7"/>', 18),
+  backspace: () => stroke('<path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>', 22),
   check: (size = 20) => stroke('<path d="M5 12.5l4.5 4.5L19 7.5"/>', size),
   cross: (size = 20) => stroke('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', size),
 };
