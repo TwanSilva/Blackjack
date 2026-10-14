@@ -1,0 +1,20 @@
+{
+  "name": "blackjack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal blackjack trainer: EV-computed basic strategy, drills and charts.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "chart": "vitest run tests/print-chart.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}
