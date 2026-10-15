@@ -1,10 +1,11 @@
 import {
   type DeckCount, type DoubleOn, type Rules, DRILL_FILTER_LABEL, RULE_PRESETS, SIX_TO_FIVE_WARNING, rulesSummary,
-  strategyKey, COUNT_VARIANTS, TRUE_COUNT_SOURCES, todaysPractice,
+  strategyKey, COUNT_VARIANTS, INSURANCE_DEVIATION, TRUE_COUNT_SOURCES, indexMismatch, todaysPractice,
 } from '../../engine';
 import { type Screen, app } from '../app';
 import { navRow, tabBar } from '../components';
 import { countScreen } from './count';
+import { countPlayScreen } from './countPlay';
 import { strategyScreen } from './strategy';
 import { trueCountScreen } from './trueCount';
 
@@ -45,7 +46,8 @@ export function hubScreen(): Screen {
       const source = TRUE_COUNT_SOURCES.find((s) => s.id === app.prefs.tcSource)!;
       const pens = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85].map((p): [number, string] => [p, `${Math.round(p * 100)}%`]);
 
-      const practice = todaysPractice(app.progress);
+      const countPlayOk = !indexMismatch(INSURANCE_DEVIATION.source, app.prefs.tcRounding, r);
+      const practice = todaysPractice(app.progress, countPlayOk);
       return `<main class="screen with-tabs">
         <header class="home-top">
           <h1 class="title">Drill</h1>
@@ -65,6 +67,7 @@ export function hubScreen(): Screen {
             ${navRow('open', 'strategy', 'Strategy drill', DRILL_FILTER_LABEL[app.prefs.filter])}
             ${navRow('open', 'count', 'Hi-Lo count drill', `${variant.name} · ${app.prefs.countMode === 'learn' && variant.learnable ? 'learning' : 'test'}`)}
             ${navRow('open', 'true', 'True count drill', source.name)}
+            ${navRow('open', 'countplay', 'Play the count', countPlayOk ? 'Illustrious 18, Fab 4 and insurance' : 'Indices don’t fit these rules')}
           </div>
         </section>
 
@@ -93,12 +96,13 @@ export function hubScreen(): Screen {
     click(act, el) {
       const v = el.dataset.value!;
       if (act === 'practice') {
-        const pr = todaysPractice(app.progress);
+        const pr = todaysPractice(app.progress, !indexMismatch(INSURANCE_DEVIATION.source, app.prefs.tcRounding, app.prefs.rules));
         if (pr.kind === 'strategy') app.go(strategyScreen({ filter: pr.filter, hands: pr.size, autostart: true }));
         else if (pr.kind === 'count') app.go(countScreen({ variant: pr.countVariant, autostart: true }));
+        else if (pr.kind === 'deviation') app.go(countPlayScreen({ autostart: true }));
         else app.go(trueCountScreen({ source: pr.tcSource, autostart: true }));
       } else if (act === 'open') {
-        app.go(v === 'strategy' ? strategyScreen() : v === 'count' ? countScreen() : trueCountScreen());
+        app.go(v === 'strategy' ? strategyScreen() : v === 'count' ? countScreen() : v === 'countplay' ? countPlayScreen() : trueCountScreen());
       } else if (act === 'preset') {
         const p = RULE_PRESETS.find((x) => x.id === v);
         if (p) { app.setPrefs({ rules: { ...p.rules, penetration: app.prefs.rules.penetration } }); app.render(); }

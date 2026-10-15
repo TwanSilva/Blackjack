@@ -5,7 +5,7 @@ import type { Rng } from '../shoe';
 import { type HandKind, classLabel } from '../strategy/classes';
 import { type DrillCell, type DrillFilter, cellKey, drillCells } from '../strategy/drill';
 import {
-  type Progress, accuracy, avgDecisionSeconds, bestDeckTime, cellWeight, strategyTotals, weakCells,
+  type Progress, accuracy, avgDecisionSeconds, bestDeckTime, cellWeight, deviationTotals, strategyTotals, weakCells,
 } from './model';
 
 /** A missed cell comes back this many hands later in the same session. */
@@ -63,7 +63,7 @@ export class DrillScheduler {
 }
 
 export interface Practice {
-  kind: 'strategy' | 'count' | 'true';
+  kind: 'strategy' | 'count' | 'true' | 'deviation';
   /** One line naming what to work on. */
   title: string;
   /** "About 10 min · 80 hands". */
@@ -83,8 +83,11 @@ function minutes(seconds: number): string {
   return `About ${m} min`;
 }
 
-/** The roughly ten-minute drill most likely to help right now, from the player's own mistakes. */
-export function todaysPractice(p: Progress): Practice {
+/**
+ * The roughly ten-minute drill most likely to help right now, from the player's own mistakes.
+ * `countPlayAvailable` is false when the index table doesn't fit the player's rules or rounding.
+ */
+export function todaysPractice(p: Progress, countPlayAvailable = true): Practice {
   const secsPerHand = avgDecisionSeconds(p) ?? DEFAULT_SECONDS_PER_HAND;
   const hands = Math.min(100, Math.max(20, Math.round(600 / (secsPerHand + 1.5) / 10) * 10));
   const strategy = strategyTotals(p);
@@ -136,6 +139,16 @@ export function todaysPractice(p: Progress): Practice {
       tcSource: weakTc.s.id,
       size: 10,
       detail: `${minutes(10 * 15)} · 10 questions`,
+    };
+  }
+
+  const dev = deviationTotals(p);
+  if (countPlayAvailable && (dev.attempts < 20 || dev.correct / dev.attempts < 0.85)) {
+    return {
+      kind: 'deviation',
+      title: 'Play the count: the Illustrious 18 and Fab 4',
+      size: 20,
+      detail: `${minutes(20 * 10)} · 20 hands`,
     };
   }
 

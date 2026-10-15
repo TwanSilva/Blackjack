@@ -1,5 +1,5 @@
 import {
-  type CellBand, type HandClass, ACTION_LABEL, BAND_LABEL, HARD_TOTALS, PAIR_PIPS, SOFT_TOTALS,
+  type CellBand, type HandClass, ACTION_LABEL, BAND_LABEL, DEVIATIONS, HARD_TOTALS, PAIR_PIPS, SOFT_TOTALS,
   TRUE_COUNT_SOURCES, UPCARDS, accuracy, adviseClass, avgDecisionSeconds, bestDeckTime, cellBand, cellKey, cellsSeen,
   classLabel, hardClass, mistakesToReplay, pairClass, parseCellKey, parseProgress, pipName, rowLabel, softClass, strategyTotals,
   totalCells, weakCells,
@@ -100,6 +100,15 @@ export function statsScreen(): Screen {
     return `<div class="stack">${rows}</div>`;
   }
 
+  function countPlaySection(): string {
+    const rows = DEVIATIONS.filter((d) => app.progress.deviations[d.id]?.attempts);
+    if (!rows.length) return '<p class="small muted">No play-the-count hands yet.</p>';
+    const acc = (id: string) => { const t = app.progress.deviations[id]; return t.correct / t.attempts; };
+    rows.sort((a, b) => acc(a.id) - acc(b.id));
+    const label = (d: (typeof DEVIATIONS)[number]) => (d.hand ? `${classLabel(d.hand)} vs ${pipName(d.upcard)}` : 'Insurance');
+    return `<div class="stack">${rows.map((d) => meter(label(d), app.progress.deviations[d.id])).join('')}</div>`;
+  }
+
   function mistakeLog(): string {
     const list = [...app.progress.mistakes].reverse().slice(0, 10);
     if (!list.length) return '<p class="small muted">No mistakes logged yet.</p>';
@@ -114,7 +123,7 @@ export function statsScreen(): Screen {
   function history(): string {
     const list = [...app.progress.sessions].reverse().slice(0, 15);
     if (!list.length) return '<p class="small muted">No sessions yet.</p>';
-    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count' } as const;
+    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count', deviation: 'Play the count' } as const;
     return `<table class="history"><thead><tr><th>Date</th><th>Drill</th><th class="num">Score</th></tr></thead><tbody>${list.map((s) =>
       `<tr><td>${day(s.at)}</td><td>${kind[s.kind]} · ${s.label}</td><td class="num">${s.kind === 'count' && s.total === 1 ? (s.correct ? 'Right' : 'Wrong') : `${s.correct}/${s.total}`}</td></tr>`).join('')}</tbody></table>`;
   }
@@ -178,6 +187,7 @@ export function statsScreen(): Screen {
 
         <section class="block"><h2 class="section-label">Counting</h2>${countingSection()}</section>
         <section class="block"><h2 class="section-label">True count</h2>${trueCountSection()}</section>
+        <section class="block"><h2 class="section-label">Playing the count</h2>${countPlaySection()}</section>
         <section class="block"><h2 class="section-label">Mistake log</h2>${mistakeLog()}</section>
         <section class="block"><h2 class="section-label">Session history</h2>${history()}</section>
 

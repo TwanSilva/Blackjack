@@ -11,6 +11,8 @@ export * from './strategy/evaluate';
 export * from './strategy/oracle';
 export * from './strategy/chart';
 export * from './strategy/deviations';
+export * from './strategy/countPlay';
+export * from './strategy/countPlayDrill';
 export * from './strategy/indexCompute';
 export * from './strategy/reasons';
 export * from './strategy/drill';

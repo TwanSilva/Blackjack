@@ -34,7 +34,7 @@ export interface MistakeRecord {
   lossPer100: number;
 }
 
-export type SessionKind = 'strategy' | 'count' | 'true';
+export type SessionKind = 'strategy' | 'count' | 'true' | 'deviation';
 
 export interface SessionRecord {
   at: number;
@@ -71,6 +71,8 @@ export interface Progress {
   sessions: SessionRecord[];
   counts: CountRecord[];
   trueCounts: Partial<Record<TrueCountSource, Tally>>;
+  /** Play-the-count answers per index row (by deviation id). */
+  deviations: Record<string, Tally>;
   streak: { current: number; best: number };
   /** Strategy decision time, for speed stats and time estimates. */
   decisionTime: { totalMs: number; n: number };
@@ -97,6 +99,7 @@ export function emptyProgress(): Progress {
     sessions: [],
     counts: [],
     trueCounts: {},
+    deviations: {},
     streak: { current: 0, best: 0 },
     decisionTime: { totalMs: 0, n: 0 },
   };
@@ -153,6 +156,21 @@ export function recordSession(p: Progress, s: SessionRecord): void {
 
 export function recordCountRun(p: Progress, r: CountRecord): void {
   pushCapped(p.counts, r, MAX_COUNT_RUNS);
+}
+
+export function recordDeviation(p: Progress, id: string, correct: boolean): void {
+  const t = p.deviations[id] ?? { attempts: 0, correct: 0 };
+  t.attempts++;
+  if (correct) t.correct++;
+  p.deviations[id] = t;
+}
+
+/** Play-the-count accuracy over every index row. */
+export function deviationTotals(p: Progress): Tally {
+  let attempts = 0;
+  let correct = 0;
+  for (const t of Object.values(p.deviations)) { attempts += t.attempts; correct += t.correct; }
+  return { attempts, correct };
 }
 
 export function recordTrueCount(p: Progress, source: TrueCountSource, correct: boolean): void {
@@ -291,6 +309,7 @@ export function parseProgress(json: unknown): Progress {
     ...base,
     ...(json as unknown as Progress),
     trueCounts: isObj(json.trueCounts) ? (json.trueCounts as Progress['trueCounts']) : {},
+    deviations: isObj(json.deviations) ? (json.deviations as Progress['deviations']) : {},
     streak: isObj(json.streak) ? (json.streak as Progress['streak']) : base.streak,
     decisionTime: isObj(json.decisionTime) ? (json.decisionTime as Progress['decisionTime']) : base.decisionTime,
   };

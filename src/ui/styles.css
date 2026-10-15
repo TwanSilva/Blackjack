@@ -257,6 +257,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .tray-edges line { stroke: #45454c; stroke-width: 1; }
 .tray-label { fill: var(--muted); font-size: 13px; font-family: inherit; }
 
+/* Play the count */
+.count-given { align-items: center; text-align: center; }
+.count-given .given-value { font-size: 44px; }
+
 /* Index rounding warning */
 .index-warning {
   display: flex; gap: 8px; align-items: flex-start; color: var(--text);

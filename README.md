@@ -2,7 +2,7 @@
 
 A personal blackjack trainer that runs in the browser. Spec: `UX Blackjack.md` (rules, strategy) and `UI Blackjack.md` (looks).
 
-Built so far: build steps 1 to 5.
+Built so far: build steps 1 to 6.
 
 1. **Game engine** in `src/engine/`: cards, shoe with cut card, hand values, dealer play (H17/S17), available actions, payouts. No UI code.
 2. **Strategy oracle** in `src/engine/strategy/`: `bestPlay(hand, upcard, rules, trueCount?)` returns the best action and the EV of every allowed option.
@@ -16,6 +16,8 @@ Built so far: build steps 1 to 5.
    - **Weak spots:** cells you have missed and not yet answered right several times in a row. "My weak spots" drills only those, and becomes the default filter after three sessions.
    - **Today's practice:** picks the roughly ten-minute drill most likely to help, from your own mistakes.
    - **Stats screen:** accuracy by hand type, a heat map of every chart cell, weak spots, count accuracy and speed charts, true count accuracy, the mistake log with replay, session history, and export/import of your progress as a JSON file.
+
+6. **Playing the count.** `bestPlay(hand, upcard, rules, trueCount)` applies the verified index table: the Fab 4 surrender decision first, then the Illustrious 18 row for the hand, then insurance. Hands of three or more cards use the in-game index where late surrender changes it. With other rules or another rounding it keeps basic strategy and says why. The **play-the-count drill** deals only hands where the count flips the answer, with the true count shown or (advanced) the running count and decks left to work it out. The feedback names the index that applied.
 
 The UI is split into `src/ui/app.ts` (the shell: chart overlay, keys, pausing) and one file per screen in `src/ui/screens/`. Opening the chart, or switching away from the tab, pauses any running drill.
 
