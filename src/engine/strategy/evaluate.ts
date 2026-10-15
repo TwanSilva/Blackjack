@@ -112,9 +112,18 @@ export interface EvaluateOptions {
   splitAces?: boolean;
 }
 
-/** Evaluates one exact hand (any number of cards) against an upcard. */
-export function evaluatePips(pips: readonly Pip[], upcard: Pip, rules: Rules, allow: EvaluateOptions): Evaluation {
-  const comp: Composition = removeCards(fullShoe(rules.decks), [...pips, upcard]);
+/**
+ * Evaluates one exact hand (any number of cards) against an upcard. `shoe` is the shoe before the player's
+ * cards and the upcard are dealt; it defaults to a fresh shoe for the table's deck count.
+ */
+export function evaluatePips(
+  pips: readonly Pip[],
+  upcard: Pip,
+  rules: Rules,
+  allow: EvaluateOptions,
+  shoe: Composition = fullShoe(rules.decks),
+): Evaluation {
+  const comp: Composition = removeCards(shoe, [...pips, upcard]);
   const model = dealerModel(upcard, comp, rules.hitSoft17);
   const calc = new PlayerEv(model.playerDraw, model.final);
   const score = scorer(rules, model.pBlackjack);
@@ -151,7 +160,13 @@ export function evaluateClass(cls: HandClass, upcard: Pip, rules: Rules): Evalua
   const key = `${strategyKey(rules)}|${classKey(cls)}|${upcard}`;
   const cached = classCache.get(key);
   if (cached) return cached;
+  const result = evaluateClassOn(cls, upcard, rules, fullShoe(rules.decks));
+  classCache.set(key, result);
+  return result;
+}
 
+/** The same total-dependent evaluation for any shoe composition, for example a shoe at a given true count. Not cached. */
+export function evaluateClassOn(cls: HandClass, upcard: Pip, rules: Rules, shoe: Composition): Evaluation {
   const allow: EvaluateOptions = {
     double: doubleTotalAllowed(cls.total, rules),
     surrender: rules.surrender === 'late',
@@ -161,9 +176,9 @@ export function evaluateClass(cls: HandClass, upcard: Pip, rules: Rules): Evalua
 
   if (cls.kind === 'pair') {
     const pip = cls.pip!;
-    const own = evaluatePips([pip, pip], upcard, rules, allow);
+    const own = evaluatePips([pip, pip], upcard, rules, allow, shoe);
     if (pip >= 3 && pip <= 9) {
-      const hard = evaluateClass(hardClass(pip * 2), upcard, rules);
+      const hard = evaluateClassOn(hardClass(pip * 2), upcard, rules, shoe);
       const split = own.options.filter((o) => o.action === 'split');
       result = {
         options: [...hard.options, ...split].sort((a, b) => b.ev - a.ev),
@@ -174,7 +189,7 @@ export function evaluateClass(cls: HandClass, upcard: Pip, rules: Rules): Evalua
       result = own;
     }
   } else {
-    const base = removeCards(fullShoe(rules.decks), [upcard]);
+    const base = removeCards(shoe, [upcard]);
     const combos = compositions(cls);
     const sums = new Map<Action, number>();
     let dealerBust = 0;
@@ -183,7 +198,7 @@ export function evaluateClass(cls: HandClass, upcard: Pip, rules: Rules): Evalua
     for (const [a, b] of combos) {
       const w = base[a] * (base[b] - (a === b ? 1 : 0));
       if (w <= 0) continue;
-      const e = evaluatePips([a, b], upcard, rules, allow);
+      const e = evaluatePips([a, b], upcard, rules, allow, shoe);
       for (const o of e.options) sums.set(o.action, (sums.get(o.action) ?? 0) + w * o.ev);
       dealerBust += w * e.dealerBust;
       hitBust += w * e.hitBust;
@@ -195,13 +210,16 @@ export function evaluateClass(cls: HandClass, upcard: Pip, rules: Rules): Evalua
       hitBust: hitBust / totalWeight,
     };
   }
-  classCache.set(key, result);
   return result;
 }
 
-/** EV of taking insurance (per unit of insurance bet) off the top of the shoe, with the player's cards removed. */
-export function insuranceEv(playerPips: readonly Pip[], rules: Rules): number {
-  const comp = removeCards(fullShoe(rules.decks), [...playerPips, 1]);
+/** EV of taking insurance (per unit of insurance bet), with the player's cards and the Ace removed from `shoe`. */
+export function insuranceEv(
+  playerPips: readonly Pip[],
+  rules: Rules,
+  shoe: Composition = fullShoe(rules.decks),
+): number {
+  const comp = removeCards(shoe, [...playerPips, 1]);
   let n = 0;
   for (let p = 1; p <= 10; p++) n += comp[p];
   const pTen = comp[10] / n;

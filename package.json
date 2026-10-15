@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "chart": "vitest run tests/print-chart.test.ts"
+    "chart": "vitest run tests/print-chart.test.ts",
+    "indices": "vitest run tests/print-indices.test.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
