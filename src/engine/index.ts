@@ -16,3 +16,5 @@ export * from './counting/systems';
 export * from './counting/count';
 export * from './counting/countDrill';
 export * from './counting/trueCountDrill';
+export * from './progress/model';
+export * from './progress/schedule';

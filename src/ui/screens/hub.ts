@@ -1,9 +1,9 @@
 import {
   type DeckCount, type DoubleOn, type Rules, DRILL_FILTER_LABEL, RULE_PRESETS, SIX_TO_FIVE_WARNING, rulesSummary,
-  strategyKey, COUNT_VARIANTS, TRUE_COUNT_SOURCES,
+  strategyKey, COUNT_VARIANTS, TRUE_COUNT_SOURCES, todaysPractice,
 } from '../../engine';
 import { type Screen, app } from '../app';
-import { navRow } from '../components';
+import { navRow, tabBar } from '../components';
 import { countScreen } from './count';
 import { strategyScreen } from './strategy';
 import { trueCountScreen } from './trueCount';
@@ -45,11 +45,19 @@ export function hubScreen(): Screen {
       const source = TRUE_COUNT_SOURCES.find((s) => s.id === app.prefs.tcSource)!;
       const pens = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85].map((p): [number, string] => [p, `${Math.round(p * 100)}%`]);
 
-      return `<main class="screen">
+      const practice = todaysPractice(app.progress);
+      return `<main class="screen with-tabs">
         <header class="home-top">
           <h1 class="title">Drill</h1>
           <div class="home-top-right"><span class="small muted">${rulesSummary(r)}</span>${app.chartButton()}</div>
         </header>
+
+        <section class="practice">
+          <h2 class="section-label">Today's practice</h2>
+          <p class="practice-title">${practice.title}</p>
+          <p class="small muted">${practice.detail}</p>
+          <button class="btn-primary" data-act="practice">Start drill</button>
+        </section>
 
         <section class="block">
           <h2 class="section-label">Drills</h2>
@@ -78,12 +86,18 @@ export function hubScreen(): Screen {
           </div>
           <p class="small muted">Strategy, the chart and the shoes in every drill follow these rules. Check the posted rules at your table.</p>
         </section>
+        ${tabBar('drill')}
       </main>`;
     },
 
     click(act, el) {
       const v = el.dataset.value!;
-      if (act === 'open') {
+      if (act === 'practice') {
+        const pr = todaysPractice(app.progress);
+        if (pr.kind === 'strategy') app.go(strategyScreen({ filter: pr.filter, hands: pr.size, autostart: true }));
+        else if (pr.kind === 'count') app.go(countScreen({ variant: pr.countVariant, autostart: true }));
+        else app.go(trueCountScreen({ source: pr.tcSource, autostart: true }));
+      } else if (act === 'open') {
         app.go(v === 'strategy' ? strategyScreen() : v === 'count' ? countScreen() : trueCountScreen());
       } else if (act === 'preset') {
         const p = RULE_PRESETS.find((x) => x.id === v);

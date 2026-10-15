@@ -1,6 +1,6 @@
 import {
-  type CountMode, type CountVariant, type DrillFilter, type Rules, type TrueCountRounding, type TrueCountSource,
-  DEFAULT_RULES, DEFAULT_TC_ROUNDING,
+  type CountMode, type CountVariant, type DrillFilter, type Progress, type Rules, type TrueCountRounding,
+  type TrueCountSource, DEFAULT_RULES, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress,
 } from '../engine';
 
 const KEY = 'bj-trainer:v1';
@@ -44,5 +44,25 @@ export function save(prefs: Prefs): void {
     localStorage.setItem(KEY, JSON.stringify(prefs));
   } catch {
     // Not fatal: settings just won't persist.
+  }
+}
+
+const PROGRESS_KEY = 'bj-trainer:progress:v1';
+
+export function loadProgress(): Progress {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (raw) return parseProgress(JSON.parse(raw));
+  } catch {
+    // Storage blocked or corrupt: start fresh rather than crash.
+  }
+  return emptyProgress();
+}
+
+export function saveProgress(p: Progress): void {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+  } catch {
+    // Not fatal: this session's progress just won't persist.
   }
 }

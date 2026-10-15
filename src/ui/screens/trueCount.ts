@@ -1,6 +1,7 @@
 import {
   type TrueCountGrade, type TrueCountQuestion, type TrueCountRounding, type TrueCountSource, ROUNDING_DESCRIPTION,
-  ROUNDING_LABEL, TRUE_COUNT_SOURCES, deckChoices, gradeTrueCount, makeTrueCountQuestion, signed,
+  ROUNDING_LABEL, TRUE_COUNT_SOURCES, deckChoices, gradeTrueCount, makeTrueCountQuestion, recordSession,
+  recordTrueCount, signed,
 } from '../../engine';
 import { type Screen, app } from '../app';
 import { drillHeader, numpadHtml, numpadInput, numpadKey, optionRow, parseEntry, pills, tiles } from '../components';
@@ -16,7 +17,15 @@ function decksLabel(d: number): string {
   return Number.isInteger(d) ? String(d) : d.toFixed(1);
 }
 
-export function trueCountScreen(): Screen {
+export interface TrueCountOptions {
+  source?: TrueCountSource;
+  autostart?: boolean;
+}
+
+export function trueCountScreen(opts: TrueCountOptions = {}): Screen {
+  if (opts.source) app.setPrefs({ tcSource: opts.source });
+  if (opts.autostart) queueMicrotask(() => start());
+  let startedAt = 0;
   let phase: Phase = 'setup';
   let q: TrueCountQuestion | null = null;
   let index = 0;
@@ -37,6 +46,7 @@ export function trueCountScreen(): Screen {
   }
 
   function start() {
+    startedAt = Date.now();
     index = 0;
     correct = 0;
     ask();
@@ -47,6 +57,8 @@ export function trueCountScreen(): Screen {
     if (!q || n === null || flashing) return;
     if (q.source === 'tray' && deckEstimate === undefined) return;
     grade = gradeTrueCount(q, n, deckEstimate);
+    recordTrueCount(app.progress, q.source, grade.correct);
+    app.saveProgress();
     if (grade.correct) {
       correct++;
       flashing = true;
@@ -61,7 +73,16 @@ export function trueCountScreen(): Screen {
   }
 
   function advance() {
-    if (index + 1 >= QUESTIONS) { phase = 'done'; app.render(); return; }
+    if (index + 1 >= QUESTIONS) {
+      const source = TRUE_COUNT_SOURCES.find((x) => x.id === q!.source)!;
+      recordSession(app.progress, {
+        at: Date.now(), kind: 'true', label: source.name, total: QUESTIONS, correct, durationMs: Date.now() - startedAt,
+      });
+      app.saveProgress();
+      phase = 'done';
+      app.render();
+      return;
+    }
     index++;
     ask();
   }

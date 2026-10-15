@@ -34,6 +34,13 @@ export function tiles(items: [string, string][]): string {
   return `<div class="tiles">${items.map(([l, v]) => `<div class="tile"><div class="tile-label">${l}</div><div class="tile-value">${v}</div></div>`).join('')}</div>`;
 }
 
+/** Bottom tab bar. Learn and Settings join it with the learning path (build step 8). */
+export function tabBar(active: 'drill' | 'stats'): string {
+  const tab = (id: 'drill' | 'stats', label: string) =>
+    `<button class="tab${id === active ? ' on' : ''}" data-act="tab" data-value="${id}"${id === active ? ' aria-current="page"' : ''}>${label}</button>`;
+  return `<nav class="tabbar" aria-label="Main">${tab('drill', 'Drill')}${tab('stats', 'Stats')}</nav>`;
+}
+
 // ---------- Number pad ----------
 
 /** Shows a signed whole number being typed. `entry` is the raw text, for example "-12" or "". */

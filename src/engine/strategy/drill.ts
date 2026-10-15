@@ -8,14 +8,34 @@ import {
 } from './classes';
 import { type Advice, adviseClass } from './oracle';
 
-export type DrillFilter = 'all' | 'hard' | 'soft' | 'pairs';
+export type DrillFilter = 'all' | 'hard' | 'soft' | 'pairs' | 'weak';
 
 export const DRILL_FILTER_LABEL: Record<DrillFilter, string> = {
   all: 'All hands',
   hard: 'Hard totals',
   soft: 'Soft totals',
   pairs: 'Pairs',
+  weak: 'My weak spots',
 };
+
+/** One chart cell: a hand class against one dealer upcard. */
+export interface DrillCell {
+  cls: HandClass;
+  upcard: Pip;
+}
+
+export function cellKey(cell: DrillCell): string {
+  return `${classKey(cell.cls)}|${cell.upcard}`;
+}
+
+export function parseCellKey(key: string): DrillCell | null {
+  const m = /^(hard|soft|pair)-(\d+)\|(\d+)$/.exec(key);
+  if (!m) return null;
+  const n = Number(m[2]);
+  const upcard = Number(m[3]) as Pip;
+  const cls = m[1] === 'pair' ? pairClass(n as Pip) : m[1] === 'soft' ? softClass(n) : hardClass(n);
+  return { cls, upcard };
+}
 
 export interface DrillHand {
   player: Card[];
@@ -34,6 +54,11 @@ export function drillClasses(filter: DrillFilter): HandClass[] {
   return [...hard, ...soft, ...pairs];
 }
 
+/** Every chart cell a filter covers. 'weak' covers every cell; the scheduler narrows it down. */
+export function drillCells(filter: DrillFilter): DrillCell[] {
+  return drillClasses(filter).flatMap((cls) => UPCARDS.map((upcard) => ({ cls, upcard })));
+}
+
 function pick<T>(items: readonly T[], rng: Rng): T {
   return items[Math.floor(rng() * items.length)];
 }
@@ -45,17 +70,26 @@ function cardFor(pip: Pip, rng: Rng): Card {
   return { rank, suit: pick(SUITS, rng) };
 }
 
-/** Deals a random drill hand: a uniformly random chart cell, then a random card combination for it. */
-export function dealDrillHand(filter: DrillFilter, rules: Rules, rng: Rng = Math.random): DrillHand {
-  const cls = pick(drillClasses(filter), rng);
-  const [a, b] = pick(compositions(cls), rng);
-  const up = pick(UPCARDS, rng);
+/** Deals real cards for one chart cell: a random card combination for the class, random suits. */
+export function dealHandFor(cell: DrillCell, rules: Rules, rng: Rng = Math.random): DrillHand {
+  const [a, b] = pick(compositions(cell.cls), rng);
+  const up = cell.upcard;
   const player = rng() < 0.5 ? [cardFor(a, rng), cardFor(b, rng)] : [cardFor(b, rng), cardFor(a, rng)];
+  return { player, upcard: cardFor(up, rng), hole: holeFor(up, rules, rng) };
+}
+
+/** A hole card that is consistent with the rules: with a peek it never completes a dealer blackjack. */
+export function holeFor(up: Pip, rules: Rules, rng: Rng = Math.random): Card {
   let holePip = (Math.floor(rng() * 10) + 1) as Pip;
   if (rules.dealerPeeks) {
     while ((up === 1 && holePip === 10) || (up === 10 && holePip === 1)) holePip = (Math.floor(rng() * 10) + 1) as Pip;
   }
-  return { player, upcard: cardFor(up, rng), hole: cardFor(holePip, rng) };
+  return cardFor(holePip, rng);
+}
+
+/** Deals a random drill hand: a uniformly random chart cell, then a random card combination for it. */
+export function dealDrillHand(filter: DrillFilter, rules: Rules, rng: Rng = Math.random): DrillHand {
+  return dealHandFor(pick(drillCells(filter), rng), rules, rng);
 }
 
 export interface FollowUp {

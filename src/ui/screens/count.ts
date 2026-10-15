@@ -1,7 +1,7 @@
 import {
   type CountMode, type CountResult, type CountSequence, type CountVariant, type Flash, COUNT_VARIANTS, HI_LO,
-  MAX_SECONDS, MIN_SECONDS, SPEEDS, buildCountSequence, flashMs, reviewSteps, scoreLearning, scoreTest, signed,
-  systemHint,
+  MAX_SECONDS, MIN_SECONDS, SPEEDS, buildCountSequence, flashMs, recordCountRun, recordSession, reviewSteps,
+  scoreLearning, scoreTest, signed, systemHint,
 } from '../../engine';
 import { type Screen, app } from '../app';
 import { cardHtml } from '../cards';
@@ -18,7 +18,14 @@ interface LastTap {
   tapped: number | null;
 }
 
-export function countScreen(): Screen {
+export interface CountOptions {
+  variant?: CountVariant;
+  autostart?: boolean;
+}
+
+export function countScreen(opts: CountOptions = {}): Screen {
+  if (opts.variant) app.setPrefs({ countVariant: opts.variant });
+  if (opts.autostart) queueMicrotask(() => start());
   let phase: Phase = 'setup';
   let seq: CountSequence | null = null;
   let index = 0;
@@ -97,6 +104,7 @@ export function countScreen(): Screen {
     if (mode === 'learn') {
       result = scoreLearning(seq!, taps);
       phase = 'review';
+      save();
     } else {
       phase = 'enter';
     }
@@ -108,8 +116,26 @@ export function countScreen(): Screen {
     if (n === null || !seq) return;
     result = scoreTest(seq, n);
     phase = 'review';
+    save();
     app.announce(result.correct ? 'Correct' : `Not quite. The count was ${signed(result.actual)}`);
     app.render();
+  }
+
+  function save() {
+    const s = seq!;
+    const r = result!;
+    const at = Date.now();
+    const info = COUNT_VARIANTS.find((v) => v.id === s.variant)!;
+    recordCountRun(app.progress, {
+      at, variant: s.variant, mode, cards: s.cardCount, secondsPerCard: seconds(), correct: r.correct,
+      accuracy: mode === 'learn' ? r.tapsRight! / r.tapsTotal! : r.correct ? 1 : 0, timeMs: watch.ms,
+    });
+    recordSession(app.progress, {
+      at, kind: 'count', label: `${info.name} · ${mode === 'learn' ? 'learning' : 'test'}`,
+      total: mode === 'learn' ? r.tapsTotal! : 1, correct: mode === 'learn' ? r.tapsRight! : r.correct ? 1 : 0,
+      durationMs: watch.ms,
+    });
+    app.saveProgress();
   }
 
   function flashHtml(f: Flash): string {
