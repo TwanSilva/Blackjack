@@ -6,7 +6,7 @@ import {
   type HandClass, HARD_TOTALS, SOFT_TOTALS, classKey, classLabel, classifyPips, hardClass, softClass,
 } from './classes';
 import { DEFAULT_TC_ROUNDING, type TrueCountRounding } from '../counting/count';
-import { type IndexSource, INSURANCE_DEVIATION, roundingMismatch } from './deviations';
+import { type IndexSource, INSURANCE_DEVIATION, deviationMismatch } from './deviations';
 import { type OptionEval, evaluateClass, evaluatePips, insuranceEv } from './evaluate';
 
 /** Hi-Lo insurance index, from the tagged (and unverified) deviation table. */
@@ -19,7 +19,7 @@ export const INSURANCE_INDEX = INSURANCE_DEVIATION.index;
 export type TrueCountInput = number | { value: number; rounding: TrueCountRounding };
 
 export interface InsuranceAdvice {
-  /** Null when the count can't decide it: the player's rounding doesn't match the index numbers. */
+  /** Null when the count can't decide it: the rounding doesn't match the index (insurance ignores the playing rules). */
   take: boolean | null;
   index: number;
   /** Where the index number came from, and whether it is verified. */
@@ -98,7 +98,7 @@ function insuranceAdvice(upcard: Pip, pips: readonly Pip[], rules: Rules, tc?: T
   // No count: basic strategy, which never takes insurance. That uses no index number.
   if (tc === undefined) return { ...base, take: false, warning: null };
   const rounding = typeof tc === 'number' ? DEFAULT_TC_ROUNDING : tc.rounding;
-  const warning = roundingMismatch(d.source, rounding);
+  const warning = deviationMismatch(d, rounding, rules);
   if (warning) return { ...base, take: null, warning };
   return { ...base, take: (countValue(tc) as number) >= d.index, warning: null };
 }
@@ -110,7 +110,8 @@ function insuranceAdvice(upcard: Pip, pips: readonly Pip[], rules: Rules, tc?: T
  * Hands with three or more cards, or hands after a split, are evaluated for their exact cards.
  *
  * `trueCount` (Hi-Lo) currently changes only the insurance decision. Play deviations come in build step 6.
- * With a rounding that doesn't match the index numbers, insurance comes back undecided with a warning.
+ * When the rounding doesn't match the index numbers, insurance comes back undecided with a warning. Insurance
+ * doesn't depend on the playing rules; play deviations (build step 6) will also require the table's rules to match.
  */
 export function bestPlay(
   hand: readonly Card[],

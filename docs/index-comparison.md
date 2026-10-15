@@ -1,5 +1,9 @@
 # Hi-Lo index numbers: memory table, EV engine and Monte Carlo
 
+**Status:** since 2026-10-15 the trainer's table (`src/engine/strategy/deviations.ts`) uses the simulated H17 floor
+indices below, tagged with this simulation as their source. The memory values are kept in it only as a reference
+column (`memoryIndex`). The run's summary is in `docs/sim-indices-h17.json`.
+
 Three sources, compared for every row of `src/engine/strategy/deviations.ts`:
 
 - **Memory:** the table in `deviations.ts`. Typed from memory, **unverified**, usually quoted for S17 shoe games.

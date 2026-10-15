@@ -1,6 +1,6 @@
 import {
   type TrueCountGrade, type TrueCountQuestion, type TrueCountRounding, type TrueCountSource, ROUNDING_DESCRIPTION,
-  INSURANCE_DEVIATION, ROUNDING_LABEL, TRUE_COUNT_ROUNDINGS, TRUE_COUNT_SOURCES, roundingMismatch, sourceStatus, deckChoices, gradeTrueCount, makeTrueCountQuestion, recordSession,
+  INSURANCE_DEVIATION, ROUNDING_LABEL, TRUE_COUNT_ROUNDINGS, TRUE_COUNT_SOURCES, indexMismatch, sourceStatus, deckChoices, gradeTrueCount, makeTrueCountQuestion, recordSession,
   recordTrueCount, signed,
 } from '../../engine';
 import { type Screen, app } from '../app';
@@ -159,7 +159,7 @@ export function trueCountScreen(opts: TrueCountOptions = {}): Screen {
     const sources = TRUE_COUNT_SOURCES.map((s) => optionRow('source', s.id, s.name, s.detail, s.id === app.prefs.tcSource)).join('');
     const r = app.prefs.tcRounding;
     const rounding = pills('rounding', TRUE_COUNT_ROUNDINGS.map((k) => ({ value: k, label: ROUNDING_LABEL[k], on: k === r })), 'Rounding');
-    const mismatch = roundingMismatch(INSURANCE_DEVIATION.source, r);
+    const mismatch = indexMismatch(INSURANCE_DEVIATION.source, r, app.prefs.rules);
     return `<main class="screen">
       ${drillHeader('True count drill', undefined, 'Back to drills')}
       <p class="small muted">True count = running count ÷ decks remaining. Positions come from a real ${app.prefs.rules.decks}-deck shoe dealt to a random point before the cut card.</p>

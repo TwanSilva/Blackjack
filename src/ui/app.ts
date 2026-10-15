@@ -1,4 +1,4 @@
-import { type Advice, type Progress, INSURANCE_DEVIATION, buildChart, roundingMismatch } from '../engine';
+import { type Advice, type Progress, INSURANCE_DEVIATION, buildChart, deviationMismatch } from '../engine';
 import { chartHtml } from './chart';
 import { icon } from './icons';
 import { type Prefs, load, loadProgress, save, saveProgress } from './storage';
@@ -84,7 +84,7 @@ export const app = {
     chartReturnFocus = document.activeElement as HTMLElement | null;
     chartOpen = true;
     current?.pause?.();
-    const warning = roundingMismatch(INSURANCE_DEVIATION.source, app.prefs.tcRounding);
+    const warning = deviationMismatch(INSURANCE_DEVIATION, app.prefs.tcRounding, app.prefs.rules);
     overlay.innerHTML = chartHtml(buildChart(app.prefs.rules), current?.chartFocus?.() ?? null, warning);
     document.body.classList.add('no-scroll');
     overlay.querySelector<HTMLElement>('[data-act="close-chart"]')?.focus();

@@ -33,9 +33,10 @@ A Monte Carlo test (`tests/montecarlo.test.ts`) checks the EV recursion against 
 
 ## Count indices
 
-`src/engine/strategy/deviations.ts` holds the Illustrious 18, Fab 4 and insurance indices, typed from memory and marked
-unverified. `docs/index-comparison.md` compares them with the EV engine and with a 20-million-shoe simulation for the
-default rules. The simulation is the reference.
+`src/engine/strategy/deviations.ts` holds the Illustrious 18, Fab 4 and insurance indices from a 20-million-shoe
+simulation of the default table (8 decks, H17, DAS, late surrender, dealer peeks) with floor rounding. The old
+values typed from memory are kept as a reference column only. With other rules or another rounding the app warns
+and doesn't apply the playing deviations; insurance ignores the playing rules. See `docs/index-comparison.md`.
 
 ## Commands
 

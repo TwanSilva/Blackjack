@@ -1,0 +1,484 @@
+{
+  "description": "Monte Carlo of the Hi-Lo deviation indices. Produced by scripts/run-index-sim.mjs (src/engine/sim/indexSim.ts).",
+  "date": "2026-10-15",
+  "rules": {
+    "decks": 8,
+    "hitSoft17": true,
+    "blackjackPays": 1.5,
+    "doubleAfterSplit": true,
+    "doubleOn": "any",
+    "resplitAces": false,
+    "maxSplitHands": 4,
+    "surrender": "late",
+    "dealerPeeks": true,
+    "penetration": 0.75
+  },
+  "rounding": "floor",
+  "shoes": 20000160,
+  "batches": 190,
+  "minSamplesPerBin": 20000,
+  "rows": [
+    {
+      "id": "insurance",
+      "index": 3,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 3,
+        "n": 27917762,
+        "gainPer100": 1.2956,
+        "sePer100": 0.02921
+      },
+      "oneBelow": {
+        "tc": 2,
+        "n": 63108955,
+        "gainPer100": -1.13179,
+        "sePer100": 0.0185
+      },
+      "inGame": {
+        "index": 3,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "16v10",
+      "index": 0,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 0,
+        "n": 29598937,
+        "gainPer100": 0.07355,
+        "sePer100": 0.0232
+      },
+      "oneBelow": {
+        "tc": -1,
+        "n": 28162883,
+        "gainPer100": -0.58414,
+        "sePer100": 0.02484
+      },
+      "inGame": {
+        "index": 0,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "15v10",
+      "index": 4,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 4,
+        "n": 1986465,
+        "gainPer100": 0.28166,
+        "sePer100": 0.08155
+      },
+      "oneBelow": {
+        "tc": 3,
+        "n": 3326199,
+        "gainPer100": -0.52519,
+        "sePer100": 0.06736
+      },
+      "inGame": {
+        "index": 4,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "TTv5",
+      "index": 5,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 5,
+        "n": 877622,
+        "gainPer100": 2.03242,
+        "sePer100": 0.19051
+      },
+      "oneBelow": {
+        "tc": 4,
+        "n": 1952119,
+        "gainPer100": -1.04932,
+        "sePer100": 0.12207
+      },
+      "inGame": {
+        "index": 5,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "TTv6",
+      "index": 4,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 4,
+        "n": 1952271,
+        "gainPer100": 0.89521,
+        "sePer100": 0.11674
+      },
+      "oneBelow": {
+        "tc": 3,
+        "n": 3136102,
+        "gainPer100": -1.76662,
+        "sePer100": 0.09918
+      },
+      "inGame": {
+        "index": 4,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "10v10",
+      "index": 4,
+      "confidence": "close",
+      "atIndex": {
+        "tc": 4,
+        "n": 712676,
+        "gainPer100": 0.67296,
+        "sePer100": 0.16718
+      },
+      "oneBelow": {
+        "tc": 3,
+        "n": 1205343,
+        "gainPer100": -0.14867,
+        "sePer100": 0.13195
+      },
+      "inGame": {
+        "index": 4,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "12v3",
+      "index": 1,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 1,
+        "n": 13991977,
+        "gainPer100": 0.16514,
+        "sePer100": 0.03787
+      },
+      "oneBelow": {
+        "tc": 0,
+        "n": 29694260,
+        "gainPer100": -1.17745,
+        "sePer100": 0.0256
+      },
+      "inGame": {
+        "index": 1,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "12v2",
+      "index": 3,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 3,
+        "n": 3893800,
+        "gainPer100": 0.34655,
+        "sePer100": 0.0704
+      },
+      "oneBelow": {
+        "tc": 2,
+        "n": 8401652,
+        "gainPer100": -0.77938,
+        "sePer100": 0.04571
+      },
+      "inGame": {
+        "index": 3,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "11vA",
+      "index": -1,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": -1,
+        "n": 7627769,
+        "gainPer100": 0.13203,
+        "sePer100": 0.05042
+      },
+      "oneBelow": {
+        "tc": -2,
+        "n": 4368428,
+        "gainPer100": -1.92307,
+        "sePer100": 0.0698
+      },
+      "inGame": {
+        "index": -1,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "9v2",
+      "index": 1,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 1,
+        "n": 5666171,
+        "gainPer100": 0.59359,
+        "sePer100": 0.05321
+      },
+      "oneBelow": {
+        "tc": 0,
+        "n": 11361718,
+        "gainPer100": -0.74268,
+        "sePer100": 0.03751
+      },
+      "inGame": {
+        "index": 1,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "10vA",
+      "index": 3,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 3,
+        "n": 868355,
+        "gainPer100": 1.70633,
+        "sePer100": 0.15088
+      },
+      "oneBelow": {
+        "tc": 2,
+        "n": 1982735,
+        "gainPer100": -0.79325,
+        "sePer100": 0.09118
+      },
+      "inGame": {
+        "index": 3,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "9v7",
+      "index": 4,
+      "confidence": "close",
+      "atIndex": {
+        "tc": 4,
+        "n": 801460,
+        "gainPer100": 1.99336,
+        "sePer100": 0.19174
+      },
+      "oneBelow": {
+        "tc": 3,
+        "n": 1322976,
+        "gainPer100": -0.08111,
+        "sePer100": 0.13434
+      },
+      "inGame": {
+        "index": 4,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "16v9",
+      "index": 5,
+      "confidence": "close",
+      "atIndex": {
+        "tc": 5,
+        "n": 1080999,
+        "gainPer100": 0.44505,
+        "sePer100": 0.11459
+      },
+      "oneBelow": {
+        "tc": 4,
+        "n": 2461657,
+        "gainPer100": -0.00443,
+        "sePer100": 0.08319
+      },
+      "inGame": {
+        "index": 4,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "13v2",
+      "index": -1,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": -1,
+        "n": 21775250,
+        "gainPer100": 1.09783,
+        "sePer100": 0.02994
+      },
+      "oneBelow": {
+        "tc": -2,
+        "n": 11760063,
+        "gainPer100": -0.39814,
+        "sePer100": 0.04153
+      },
+      "inGame": {
+        "index": -1,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "12v4",
+      "index": 0,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 0,
+        "n": 29046808,
+        "gainPer100": 1.13495,
+        "sePer100": 0.02659
+      },
+      "oneBelow": {
+        "tc": -1,
+        "n": 18388567,
+        "gainPer100": -0.27599,
+        "sePer100": 0.03541
+      },
+      "inGame": {
+        "index": 0,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "12v5",
+      "index": -2,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": -2,
+        "n": 9745025,
+        "gainPer100": 0.19577,
+        "sePer100": 0.04447
+      },
+      "oneBelow": {
+        "tc": -3,
+        "n": 4224978,
+        "gainPer100": -1.41703,
+        "sePer100": 0.06579
+      },
+      "inGame": {
+        "index": -2,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "12v6",
+      "index": -3,
+      "confidence": "close",
+      "atIndex": {
+        "tc": -3,
+        "n": 4209149,
+        "gainPer100": 1.28651,
+        "sePer100": 0.06538
+      },
+      "oneBelow": {
+        "tc": -4,
+        "n": 2446220,
+        "gainPer100": -0.00613,
+        "sePer100": 0.09164
+      },
+      "inGame": {
+        "index": -3,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "13v3",
+      "index": -2,
+      "confidence": "close",
+      "atIndex": {
+        "tc": -2,
+        "n": 11087768,
+        "gainPer100": 1.63265,
+        "sePer100": 0.04333
+      },
+      "oneBelow": {
+        "tc": -3,
+        "n": 4790698,
+        "gainPer100": -0.05527,
+        "sePer100": 0.06769
+      },
+      "inGame": {
+        "index": -2,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "14v10sur",
+      "index": 3,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 3,
+        "n": 2003926,
+        "gainPer100": 0.51963,
+        "sePer100": 0.05879
+      },
+      "oneBelow": {
+        "tc": 2,
+        "n": 4542702,
+        "gainPer100": -0.7264,
+        "sePer100": 0.03872
+      },
+      "inGame": {
+        "index": 3,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "15v10sur",
+      "index": 0,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": 0,
+        "n": 16741749,
+        "gainPer100": 0.96542,
+        "sePer100": 0.01925
+      },
+      "oneBelow": {
+        "tc": -1,
+        "n": 17383594,
+        "gainPer100": -0.17824,
+        "sePer100": 0.02135
+      },
+      "inGame": {
+        "index": 0,
+        "confidence": "clear"
+      }
+    },
+    {
+      "id": "15v9sur",
+      "index": 2,
+      "confidence": "close",
+      "atIndex": {
+        "tc": 2,
+        "n": 5221554,
+        "gainPer100": 0.01729,
+        "sePer100": 0.03774
+      },
+      "oneBelow": {
+        "tc": 1,
+        "n": 8983183,
+        "gainPer100": -1.17753,
+        "sePer100": 0.02985
+      },
+      "inGame": {
+        "index": 2,
+        "confidence": "close"
+      }
+    },
+    {
+      "id": "15vAsur",
+      "index": -1,
+      "confidence": "clear",
+      "atIndex": {
+        "tc": -1,
+        "n": 13200521,
+        "gainPer100": 0.48345,
+        "sePer100": 0.02431
+      },
+      "oneBelow": {
+        "tc": -2,
+        "n": 7174374,
+        "gainPer100": -0.44411,
+        "sePer100": 0.03139
+      },
+      "inGame": {
+        "index": -1,
+        "confidence": "clear"
+      }
+    }
+  ]
+}
