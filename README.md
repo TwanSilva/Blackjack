@@ -2,7 +2,7 @@
 
 A personal blackjack trainer that runs in the browser. Spec: `UX Blackjack.md` (rules, strategy) and `UI Blackjack.md` (looks).
 
-Built so far: build steps 1 to 6.
+Built so far: build steps 1 to 7.
 
 1. **Game engine** in `src/engine/`: cards, shoe with cut card, hand values, dealer play (H17/S17), available actions, payouts. No UI code.
 2. **Strategy oracle** in `src/engine/strategy/`: `bestPlay(hand, upcard, rules, trueCount?)` returns the best action and the EV of every allowed option.
@@ -18,6 +18,12 @@ Built so far: build steps 1 to 6.
    - **Stats screen:** accuracy by hand type, a heat map of every chart cell, weak spots, count accuracy and speed charts, true count accuracy, the mistake log with replay, session history, and export/import of your progress as a JSON file.
 
 6. **Playing the count.** `bestPlay(hand, upcard, rules, trueCount)` applies the verified index table: the Fab 4 surrender decision first, then the Illustrious 18 row for the hand, then insurance. Hands of three or more cards use the in-game index where late surrender changes it. With other rules or another rounding it keeps basic strategy and says why. The **play-the-count drill** deals only hands where the count flips the answer, with the true count shown or (advanced) the running count and decks left to work it out. The feedback names the index that applied.
+
+7. **Betting and the table** in `src/engine/betting/` and `src/engine/table/`.
+   - **Bet spread:** an editable table of bets keyed by true count, with the unit in potatoes. The bet sizing drill flags over- and under-betting.
+   - **Edge and risk:** the player's edge at each count comes from the EV engine on the shoe at that count. Combined with how often each count comes up in dealt shoes, it gives the expected result, swings and risk of ruin for the spread and bankroll. All of these are labelled as estimates.
+   - **`TableGame`:** a full table with a real shoe and cut card, other players on basic strategy, insurance, the dealer peek, splits, doubles and surrender. Every bet, play, insurance decision and count check is graded at the true count. It also has hints, a pressure mode (decision clock, chatter, faster dealing), a tilt guard and a session summary.
+   - **Cross-check:** flat basic strategy over 4,000,000 table rounds returned −0.672% ± 0.057%. The EV engine says −0.568%.
 
 The UI is split into `src/ui/app.ts` (the shell: chart overlay, keys, pausing) and one file per screen in `src/ui/screens/`. Opening the chart, or switching away from the tab, pauses any running drill.
 

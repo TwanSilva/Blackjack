@@ -123,7 +123,7 @@ export function statsScreen(): Screen {
   function history(): string {
     const list = [...app.progress.sessions].reverse().slice(0, 15);
     if (!list.length) return '<p class="small muted">No sessions yet.</p>';
-    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count', deviation: 'Play the count' } as const;
+    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count', deviation: 'Play the count', bet: 'Bet sizing', table: 'Table' } as const;
     return `<table class="history"><thead><tr><th>Date</th><th>Drill</th><th class="num">Score</th></tr></thead><tbody>${list.map((s) =>
       `<tr><td>${day(s.at)}</td><td>${kind[s.kind]} · ${s.label}</td><td class="num">${s.kind === 'count' && s.total === 1 ? (s.correct ? 'Right' : 'Wrong') : `${s.correct}/${s.total}`}</td></tr>`).join('')}</tbody></table>`;
   }
@@ -188,6 +188,7 @@ export function statsScreen(): Screen {
         <section class="block"><h2 class="section-label">Counting</h2>${countingSection()}</section>
         <section class="block"><h2 class="section-label">True count</h2>${trueCountSection()}</section>
         <section class="block"><h2 class="section-label">Playing the count</h2>${countPlaySection()}</section>
+        <section class="block"><h2 class="section-label">Bet sizing</h2>${p.bets.attempts ? `<div class="stack">${meter('Bets on your spread', p.bets)}</div><p class="small muted">${p.bets.over} over the spread, ${p.bets.under} under, from the bet drill and the table.</p>` : '<p class="small muted">No bets yet.</p>'}</section>
         <section class="block"><h2 class="section-label">Mistake log</h2>${mistakeLog()}</section>
         <section class="block"><h2 class="section-label">Session history</h2>${history()}</section>
 

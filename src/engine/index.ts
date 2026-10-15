@@ -22,3 +22,7 @@ export * from './counting/countDrill';
 export * from './counting/trueCountDrill';
 export * from './progress/model';
 export * from './progress/schedule';
+export * from './betting/spread';
+export * from './betting/edge';
+export * from './table/game';
+export * from './betting/betDrill';

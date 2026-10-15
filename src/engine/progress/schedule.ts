@@ -63,7 +63,7 @@ export class DrillScheduler {
 }
 
 export interface Practice {
-  kind: 'strategy' | 'count' | 'true' | 'deviation';
+  kind: 'strategy' | 'count' | 'true' | 'deviation' | 'bet' | 'table';
   /** One line naming what to work on. */
   title: string;
   /** "About 10 min · 80 hands". */
@@ -150,6 +150,14 @@ export function todaysPractice(p: Progress, countPlayAvailable = true): Practice
       size: 20,
       detail: `${minutes(20 * 10)} · 20 hands`,
     };
+  }
+
+  if (p.bets.attempts < 20 || p.bets.correct / p.bets.attempts < 0.9) {
+    return { kind: 'bet', title: 'Size your bets from the true count', size: 20, detail: `${minutes(20 * 6)} · 20 counts` };
+  }
+
+  if (!p.sessions.some((s) => s.kind === 'table')) {
+    return { kind: 'table', title: 'Put it together at a full table', size: 40, detail: 'About 15 min · as many rounds as you like' };
   }
 
   return {

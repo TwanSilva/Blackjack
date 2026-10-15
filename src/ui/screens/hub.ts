@@ -1,11 +1,14 @@
 import {
   type DeckCount, type DoubleOn, type Rules, DRILL_FILTER_LABEL, RULE_PRESETS, SIX_TO_FIVE_WARNING, rulesSummary,
-  strategyKey, COUNT_VARIANTS, INSURANCE_DEVIATION, TRUE_COUNT_SOURCES, indexMismatch, todaysPractice,
+  strategyKey, COUNT_VARIANTS, INSURANCE_DEVIATION, describeSpread, TRUE_COUNT_SOURCES, indexMismatch, todaysPractice,
 } from '../../engine';
 import { type Screen, app } from '../app';
 import { navRow, tabBar } from '../components';
 import { countScreen } from './count';
 import { countPlayScreen } from './countPlay';
+import { betDrillScreen } from './betDrill';
+import { bettingScreen } from './betting';
+import { tableScreen } from './table';
 import { strategyScreen } from './strategy';
 import { trueCountScreen } from './trueCount';
 
@@ -68,6 +71,15 @@ export function hubScreen(): Screen {
             ${navRow('open', 'count', 'Hi-Lo count drill', `${variant.name} · ${app.prefs.countMode === 'learn' && variant.learnable ? 'learning' : 'test'}`)}
             ${navRow('open', 'true', 'True count drill', source.name)}
             ${navRow('open', 'countplay', 'Play the count', countPlayOk ? 'Illustrious 18, Fab 4 and insurance' : 'Indices don’t fit these rules')}
+            ${navRow('open', 'bets', 'Bet sizing drill', 'Bet from the true count with your spread')}
+            ${navRow('open', 'table', 'Table simulation', 'Everything together, with potatoes')}
+          </div>
+        </section>
+
+        <section class="block">
+          <h2 class="section-label">Betting</h2>
+          <div class="stack">
+            ${navRow('open', 'betting', 'Bet spread and bankroll', `${describeSpread(app.prefs.spread)} 1 unit = ${app.prefs.unitPotatoes} potatoes.`)}
           </div>
         </section>
 
@@ -100,9 +112,15 @@ export function hubScreen(): Screen {
         if (pr.kind === 'strategy') app.go(strategyScreen({ filter: pr.filter, hands: pr.size, autostart: true }));
         else if (pr.kind === 'count') app.go(countScreen({ variant: pr.countVariant, autostart: true }));
         else if (pr.kind === 'deviation') app.go(countPlayScreen({ autostart: true }));
+        else if (pr.kind === 'bet') app.go(betDrillScreen({ autostart: true }));
+        else if (pr.kind === 'table') app.go(tableScreen());
         else app.go(trueCountScreen({ source: pr.tcSource, autostart: true }));
       } else if (act === 'open') {
-        app.go(v === 'strategy' ? strategyScreen() : v === 'count' ? countScreen() : v === 'countplay' ? countPlayScreen() : trueCountScreen());
+        const screens: Record<string, () => Screen> = {
+          strategy: () => strategyScreen(), count: () => countScreen(), countplay: () => countPlayScreen(),
+          true: () => trueCountScreen(), bets: () => betDrillScreen(), table: () => tableScreen(), betting: () => bettingScreen(),
+        };
+        app.go(screens[v]());
       } else if (act === 'preset') {
         const p = RULE_PRESETS.find((x) => x.id === v);
         if (p) { app.setPrefs({ rules: { ...p.rules, penetration: app.prefs.rules.penetration } }); app.render(); }

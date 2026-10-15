@@ -34,7 +34,7 @@ export interface MistakeRecord {
   lossPer100: number;
 }
 
-export type SessionKind = 'strategy' | 'count' | 'true' | 'deviation';
+export type SessionKind = 'strategy' | 'count' | 'true' | 'deviation' | 'bet' | 'table';
 
 export interface SessionRecord {
   at: number;
@@ -73,6 +73,8 @@ export interface Progress {
   trueCounts: Partial<Record<TrueCountSource, Tally>>;
   /** Play-the-count answers per index row (by deviation id). */
   deviations: Record<string, Tally>;
+  /** Bet sizing answers, from the bet drill and the table. */
+  bets: Tally & { over: number; under: number };
   streak: { current: number; best: number };
   /** Strategy decision time, for speed stats and time estimates. */
   decisionTime: { totalMs: number; n: number };
@@ -100,6 +102,7 @@ export function emptyProgress(): Progress {
     counts: [],
     trueCounts: {},
     deviations: {},
+    bets: { attempts: 0, correct: 0, over: 0, under: 0 },
     streak: { current: 0, best: 0 },
     decisionTime: { totalMs: 0, n: 0 },
   };
@@ -156,6 +159,13 @@ export function recordSession(p: Progress, s: SessionRecord): void {
 
 export function recordCountRun(p: Progress, r: CountRecord): void {
   pushCapped(p.counts, r, MAX_COUNT_RUNS);
+}
+
+export function recordBet(p: Progress, verdict: 'right' | 'over' | 'under'): void {
+  p.bets.attempts++;
+  if (verdict === 'right') p.bets.correct++;
+  if (verdict === 'over') p.bets.over++;
+  if (verdict === 'under') p.bets.under++;
 }
 
 export function recordDeviation(p: Progress, id: string, correct: boolean): void {
@@ -310,6 +320,7 @@ export function parseProgress(json: unknown): Progress {
     ...(json as unknown as Progress),
     trueCounts: isObj(json.trueCounts) ? (json.trueCounts as Progress['trueCounts']) : {},
     deviations: isObj(json.deviations) ? (json.deviations as Progress['deviations']) : {},
+    bets: isObj(json.bets) ? (json.bets as unknown as Progress['bets']) : base.bets,
     streak: isObj(json.streak) ? (json.streak as Progress['streak']) : base.streak,
     decisionTime: isObj(json.decisionTime) ? (json.decisionTime as Progress['decisionTime']) : base.decisionTime,
   };

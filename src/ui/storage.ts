@@ -1,6 +1,6 @@
 import {
-  type CountMode, type CountVariant, type DrillFilter, type Progress, type Rules, type TrueCountRounding,
-  type TrueCountSource, DEFAULT_RULES, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress, parseRounding,
+  type BetSpread, type CountMode, type CountVariant, type DrillFilter, type Progress, type Rules, type TrueCountRounding,
+  type TrueCountSource, DEFAULT_RULES, DEFAULT_SPREAD, DEFAULT_UNIT_POTATOES, validateSpread, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress, parseRounding,
 } from '../engine';
 
 const KEY = 'bj-trainer:v1';
@@ -14,6 +14,22 @@ export interface Prefs {
   countSeconds: number;
   tcSource: TrueCountSource;
   tcRounding: TrueCountRounding;
+  spread: BetSpread;
+  unitPotatoes: number;
+  bankrollSize: BankrollSize;
+  table: TablePrefs;
+}
+
+export type BankrollSize = 'small' | 'medium' | 'large';
+/** Practice bankroll in units of the bet: small, medium, large. */
+export const BANKROLL_UNITS: Record<BankrollSize, number> = { small: 50, medium: 200, large: 1000 };
+
+export interface TablePrefs {
+  others: number;
+  hints: boolean;
+  pressure: boolean;
+  /** Ask for the running count every this many rounds; 0 = never. */
+  countCheckEvery: number;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -24,6 +40,10 @@ export const DEFAULT_PREFS: Prefs = {
   countSeconds: 2,
   tcSource: 'decks',
   tcRounding: DEFAULT_TC_ROUNDING,
+  spread: { base: DEFAULT_SPREAD.base, steps: DEFAULT_SPREAD.steps.map((x) => ({ ...x })) },
+  unitPotatoes: DEFAULT_UNIT_POTATOES,
+  bankrollSize: 'medium',
+  table: { others: 2, hints: false, pressure: false, countCheckEvery: 6 },
 };
 
 export function load(): Prefs {
@@ -36,12 +56,14 @@ export function load(): Prefs {
         ...parsed,
         rules: { ...DEFAULT_RULES, ...parsed.rules },
         tcRounding: parseRounding(parsed.tcRounding),
+        spread: parsed.spread && validateSpread(parsed.spread).length === 0 ? parsed.spread : DEFAULT_PREFS.spread,
+        table: { ...DEFAULT_PREFS.table, ...parsed.table },
       };
     }
   } catch {
     // Storage blocked or corrupt: fall back to defaults.
   }
-  return { ...DEFAULT_PREFS, rules: { ...DEFAULT_RULES } };
+  return { ...DEFAULT_PREFS, rules: { ...DEFAULT_RULES }, spread: structuredClone(DEFAULT_PREFS.spread), table: { ...DEFAULT_PREFS.table } };
 }
 
 export function save(prefs: Prefs): void {
