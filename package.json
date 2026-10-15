@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "chart": "vitest run tests/print-chart.test.ts",
-    "indices": "vitest run tests/print-indices.test.ts"
+    "indices": "vitest run tests/print-indices.test.ts",
+    "sim:build": "vite build --ssr src/engine/sim/simEntry.ts --outDir out/sim-build --emptyOutDir",
+    "sim": "npm run sim:build && node scripts/run-index-sim.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

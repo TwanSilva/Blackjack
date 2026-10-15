@@ -29,7 +29,7 @@ const EXPECTED_H17_FLOOR: Record<string, number> = {
   '10vA': 3,
   '9v7': 3,
   '16v9': 5,
-  '13v2': -2,
+  '13v2': -1,
   '12v4': -1,
   '12v5': -2,
   '12v6': -4,
@@ -80,5 +80,5 @@ describe('index switches exactly at the index (H17, 8 decks, floor)', () => {
     const basic = basicPlay(d);
     if (basic === d.atOrAbove) expect(index).toBeLessThanOrEqual(0);
     else expect(index).toBeGreaterThanOrEqual(0);
-  });
+  }, 60_000);
 });

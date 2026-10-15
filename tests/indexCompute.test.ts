@@ -46,14 +46,14 @@ describe('index finder', () => {
       if (r.index.floor! > 0) expect(r.index.truncate, d.id).toBe(r.index.floor);
       expect(r.index.nearest!, d.id).toBeLessThanOrEqual(r.index.floor! + 1);
     }
-  });
+  }, 60_000);
 
   test('the deviation gains EV as the count rises for every row of the table', () => {
     for (const d of DEVIATIONS) {
       const r = computeIndex(d, S17);
       expect(r.regime, d.id).not.toBe('reversed');
     }
-  });
+  }, 60_000);
 
   test('the index is the crossing pushed to the band that favours the play', () => {
     const r = computeIndex(row('16v10'), S17);

@@ -31,6 +31,12 @@ Nothing is typed in from a chart. For each rule set the engine computes expected
 
 A Monte Carlo test (`tests/montecarlo.test.ts`) checks the EV recursion against simulated hands that use the step-1 game engine.
 
+## Count indices
+
+`src/engine/strategy/deviations.ts` holds the Illustrious 18, Fab 4 and insurance indices, typed from memory and marked
+unverified. `docs/index-comparison.md` compares them with the EV engine and with a 20-million-shoe simulation for the
+default rules. The simulation is the reference.
+
 ## Commands
 
 ```bash
@@ -38,5 +44,7 @@ npm install
 npm run dev      # app at http://localhost:5173
 npm test         # all tests (also writes out/charts.txt)
 npm run chart    # computed charts for H17 and S17, plus the closest decisions
+npm run indices  # index numbers from the EV engine (quick estimate)
+npm run sim -- 20000000 h17   # Monte Carlo check of every index with real shoes (about 7 min on 20 threads)
 npm run build
 ```

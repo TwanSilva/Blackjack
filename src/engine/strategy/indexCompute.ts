@@ -1,5 +1,5 @@
 import { PIPS } from '../cards';
-import { TRUE_COUNT_ROUNDINGS, type TrueCountRounding } from '../counting/count';
+import { TRUE_COUNT_ROUNDINGS, type TrueCountRounding, roundDecks, trueCount } from '../counting/count';
 import { type CountSystem, HI_LO } from '../counting/systems';
 import type { Rules } from '../rules';
 import { type Composition, cardsIn, fullShoe } from './composition';
@@ -17,11 +17,12 @@ import { evaluateClassOn, insuranceEv } from './evaluate';
  * 2. Both plays of a row are evaluated on that shoe with the same total-dependent EV calculation as the
  *    chart, on a grid of true counts.
  * 3. The crossing is the true count where the two EVs are equal.
- * 4. The integer index for a rounding: a displayed count of n covers a band of real counts (floor: n to n+1).
- *    The index is the lowest n whose band favours the deviation on average, and every higher band does too.
+ * 4. The integer index for a rounding: a displayed count of n stands for the real counts that whole running
+ *    counts produce at this shoe depth and that round to n (floor, 4 decks left: n, n+0.25, n+0.5, n+0.75).
+ *    The index is the lowest n whose real counts favour the deviation on average, and every higher n does too.
  *
- * Limits: the shoe at a count is the average shoe for that count, not every shoe that could give it, and
- * real counts are not spread evenly within a band. Index numbers from simulation can differ by about one.
+ * Limits: the shoe at a count is the average shoe for that count, not every shoe that could give it, and only
+ * two-card hands are evaluated. src/engine/sim/indexSim.ts checks these numbers by simulating real shoes.
  */
 
 /** The average remaining shoe at true count `tc`. Valid for level-one counts such as Hi-Lo. */
@@ -90,15 +91,6 @@ export interface ComputeOptions {
 
 const STEP = 0.125;
 
-/** The band of real true counts that a rounding displays as `n`. */
-function band(n: number, r: TrueCountRounding): [number, number] {
-  if (r === 'floor') return [n, n + 1];
-  if (r === 'nearest') return [n - 0.5, n + 0.5];
-  if (n > 0) return [n, n + 1];
-  if (n < 0) return [n - 1, n];
-  return [-1, 1];
-}
-
 export function computeIndex(d: DeviationIndex, rules: Rules, opts: ComputeOptions = {}): ComputedIndex {
   const decksRemaining = opts.decksRemaining ?? 4;
   const min = opts.min ?? -10;
@@ -131,19 +123,36 @@ export function computeIndex(d: DeviationIndex, rules: Rules, opts: ComputeOptio
     if (gains[i - 1] >= 0 && gains[i] < 0) reversed = true;
   }
 
-  const avg = (a: number, b: number) => {
-    let s = 0;
-    let n = 0;
-    ts.forEach((t, i) => { if (t > a && t < b) { s += gains[i]; n++; } });
-    return s / n;
+  // A displayed count n stands for the real counts that whole running counts produce at this depth and that
+  // round to n: with 4 decks left and floor, RC 4n..4n+3, so real counts n, n+0.25, n+0.5, n+0.75.
+  const divisor = roundDecks(decksRemaining);
+  const gainAtRc = new Map<number, number>();
+  const gainFor = (rc: number) => {
+    let g = gainAtRc.get(rc);
+    if (g === undefined) {
+      g = deviationGain(d, rules, rc / divisor, decksRemaining) as number;
+      gainAtRc.set(rc, g);
+    }
+    return g;
+  };
+  const avg = (n: number, r: TrueCountRounding) => {
+    const lo = Math.floor((n - 1.5) * divisor);
+    const hi = Math.ceil((n + 1.5) * divisor);
+    let sum = 0;
+    let count = 0;
+    for (let rc = lo; rc <= hi; rc++) {
+      if (trueCount(rc, divisor, r) !== n) continue;
+      sum += gainFor(rc);
+      count++;
+    }
+    return sum / count;
   };
 
   const index = { ...empty } as Record<TrueCountRounding, number | null>;
   for (const r of TRUE_COUNT_ROUNDINGS) {
     let found: number | null = null;
     for (let n = max; n >= min; n--) {
-      const [a, b] = band(n, r);
-      if (avg(a, b) >= 0) found = n; else break;
+      if (avg(n, r) >= 0) found = n; else break;
     }
     index[r] = found;
   }
