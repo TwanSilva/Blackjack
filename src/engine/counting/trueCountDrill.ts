@@ -7,7 +7,7 @@ export type TrueCountSource = 'decks' | 'cards' | 'tray';
 
 export const TRUE_COUNT_SOURCES: readonly { id: TrueCountSource; name: string; detail: string }[] = [
   { id: 'decks', name: 'Decks remaining given', detail: 'Running count and decks left, to the half deck' },
-  { id: 'cards', name: 'Cards remaining given', detail: 'Running count and the exact cards left' },
+  { id: 'cards', name: 'Cards remaining given', detail: 'Exact cards left: convert to the half deck, then divide' },
   { id: 'tray', name: 'Read the discard tray', detail: 'Estimate decks left from the tray, then divide' },
 ];
 
@@ -17,7 +17,7 @@ export interface TrueCountQuestion {
   shoeDecks: number;
   cardsRemaining: number;
   cardsDiscarded: number;
-  /** Decks remaining used for the answer: the half-deck estimate, or the exact figure when cards are given. */
+  /** Decks remaining used for the answer, rounded to the nearest half deck (for every source). */
   decksForAnswer: number;
   answer: number;
   rounding: TrueCountRounding;
@@ -39,7 +39,8 @@ export function makeTrueCountQuestion(
   const dealt = minDealt + Math.floor(rng() * (maxDealt - minDealt + 1));
   for (let i = 0; i < dealt; i++) tracker.see(shoe.draw());
   const cardsRemaining = tracker.cardsRemaining;
-  const decksForAnswer = source === 'cards' ? cardsRemaining / 52 : estimateDecks(cardsRemaining);
+  // Every source divides by decks remaining rounded to the nearest half deck.
+  const decksForAnswer = estimateDecks(cardsRemaining);
   return {
     source,
     running: tracker.running,
@@ -77,7 +78,7 @@ export function gradeTrueCount(q: TrueCountQuestion, entered: number, deckEstima
   let divisor = q.decksForAnswer;
   let deckEstimateOk: boolean | undefined;
   if (q.source === 'cards') {
-    lines.push(`${q.cardsRemaining} cards ÷ 52 = ${(q.cardsRemaining / 52).toFixed(2)} decks.`);
+    lines.push(`${q.cardsRemaining} cards ÷ 52 = ${(q.cardsRemaining / 52).toFixed(2)} decks, ${q.decksForAnswer} to the nearest half deck.`);
   }
   if (q.source === 'tray' && deckEstimate !== undefined) {
     const actual = q.cardsRemaining / 52;

@@ -1,6 +1,6 @@
 import {
   type CountMode, type CountVariant, type DrillFilter, type Progress, type Rules, type TrueCountRounding,
-  type TrueCountSource, DEFAULT_RULES, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress,
+  type TrueCountSource, DEFAULT_RULES, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress, parseRounding,
 } from '../engine';
 
 const KEY = 'bj-trainer:v1';
@@ -31,7 +31,12 @@ export function load(): Prefs {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<Prefs>;
-      return { ...DEFAULT_PREFS, ...parsed, rules: { ...DEFAULT_RULES, ...parsed.rules } };
+      return {
+        ...DEFAULT_PREFS,
+        ...parsed,
+        rules: { ...DEFAULT_RULES, ...parsed.rules },
+        tcRounding: parseRounding(parsed.tcRounding),
+      };
     }
   } catch {
     // Storage blocked or corrupt: fall back to defaults.

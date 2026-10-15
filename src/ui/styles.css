@@ -257,6 +257,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .tray-edges line { stroke: #45454c; stroke-width: 1; }
 .tray-label { fill: var(--muted); font-size: 13px; font-family: inherit; }
 
+/* Index rounding warning */
+.index-warning {
+  display: flex; gap: 8px; align-items: flex-start; color: var(--text);
+  border: 1px solid var(--c-stand); border-radius: 12px; padding: 10px 12px;
+}
+.index-warning svg { color: var(--c-stand); flex: none; margin-top: 1px; }
+
 /* Tab bar */
 .screen.with-tabs { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 .tabbar {

@@ -5,14 +5,27 @@ import type { Rules } from '../rules';
 import {
   type HandClass, HARD_TOTALS, SOFT_TOTALS, classKey, classLabel, classifyPips, hardClass, softClass,
 } from './classes';
+import { DEFAULT_TC_ROUNDING, type TrueCountRounding } from '../counting/count';
+import { type IndexSource, INSURANCE_DEVIATION, roundingMismatch } from './deviations';
 import { type OptionEval, evaluateClass, evaluatePips, insuranceEv } from './evaluate';
 
-/** Hi-Lo index: insurance is correct at a true count of +3 or higher. */
-export const INSURANCE_INDEX = 3;
+/** Hi-Lo insurance index, from the tagged (and unverified) deviation table. */
+export const INSURANCE_INDEX = INSURANCE_DEVIATION.index;
+
+/**
+ * A true count for the oracle. A bare number is taken to be rounded with the default (floor). Pass the
+ * rounding with it when the player uses a different setting, so mismatched index numbers aren't applied.
+ */
+export type TrueCountInput = number | { value: number; rounding: TrueCountRounding };
 
 export interface InsuranceAdvice {
-  take: boolean;
+  /** Null when the count can't decide it: the player's rounding doesn't match the index numbers. */
+  take: boolean | null;
   index: number;
+  /** Where the index number came from, and whether it is verified. */
+  source: IndexSource;
+  /** Set when the index was not applied because the rounding doesn't match. */
+  warning: string | null;
   /** EV per unit of insurance off the top of the shoe (the count shifts it). */
   evOffTop: number;
 }
@@ -38,6 +51,7 @@ export interface Advice {
   insurance: InsuranceAdvice | null;
   /** The chart cell this decision comes from, or null when the hand has no chart cell (three or more cards). */
   chart: ChartRef | null;
+  /** The true count value the advice was given for, if any. */
   trueCount?: number;
 }
 
@@ -55,7 +69,7 @@ function chartRef(cls: HandClass, upcard: Pip): ChartRef | null {
 }
 
 /** Basic-strategy advice for a hand class, the same function the chart is built from. */
-export function adviseClass(cls: HandClass, upcard: Pip, rules: Rules, trueCount?: number): Advice {
+export function adviseClass(cls: HandClass, upcard: Pip, rules: Rules, trueCount?: TrueCountInput): Advice {
   const e = evaluateClass(cls, upcard, rules);
   const pips: Pip[] = cls.kind === 'pair' ? [cls.pip!, cls.pip!] : cls.kind === 'soft' ? [1, (cls.total - 11) as Pip] : [];
   return {
@@ -69,17 +83,24 @@ export function adviseClass(cls: HandClass, upcard: Pip, rules: Rules, trueCount
     hitBust: e.hitBust,
     insurance: insuranceAdvice(upcard, pips, rules, trueCount),
     chart: chartRef(cls, upcard),
-    trueCount,
+    trueCount: countValue(trueCount),
   };
 }
 
-function insuranceAdvice(upcard: Pip, pips: readonly Pip[], rules: Rules, trueCount?: number): InsuranceAdvice | null {
+function countValue(tc?: TrueCountInput): number | undefined {
+  return tc === undefined ? undefined : typeof tc === 'number' ? tc : tc.value;
+}
+
+function insuranceAdvice(upcard: Pip, pips: readonly Pip[], rules: Rules, tc?: TrueCountInput): InsuranceAdvice | null {
   if (upcard !== 1) return null;
-  return {
-    take: trueCount !== undefined && trueCount >= INSURANCE_INDEX,
-    index: INSURANCE_INDEX,
-    evOffTop: insuranceEv(pips, rules),
-  };
+  const d = INSURANCE_DEVIATION;
+  const base = { index: d.index, source: d.source, evOffTop: insuranceEv(pips, rules) };
+  // No count: basic strategy, which never takes insurance. That uses no index number.
+  if (tc === undefined) return { ...base, take: false, warning: null };
+  const rounding = typeof tc === 'number' ? DEFAULT_TC_ROUNDING : tc.rounding;
+  const warning = roundingMismatch(d.source, rounding);
+  if (warning) return { ...base, take: null, warning };
+  return { ...base, take: (countValue(tc) as number) >= d.index, warning: null };
 }
 
 /**
@@ -88,13 +109,14 @@ function insuranceAdvice(upcard: Pip, pips: readonly Pip[], rules: Rules, trueCo
  * A fresh two-card hand gets the basic-strategy (total-dependent) answer, identical to its chart cell.
  * Hands with three or more cards, or hands after a split, are evaluated for their exact cards.
  *
- * `trueCount` (Hi-Lo) currently changes only the insurance decision. Play deviations come later.
+ * `trueCount` (Hi-Lo) currently changes only the insurance decision. Play deviations come in build step 6.
+ * With a rounding that doesn't match the index numbers, insurance comes back undecided with a warning.
  */
 export function bestPlay(
   hand: readonly Card[],
   upcard: UpcardInput,
   rules: Rules,
-  trueCount?: number,
+  trueCount?: TrueCountInput,
   ctx: HandContext = {},
 ): Advice {
   if (hand.length < 2) throw new Error('A hand needs at least two cards');
@@ -125,7 +147,7 @@ export function bestPlay(
     hitBust: e.hitBust,
     insurance: insuranceAdvice(up, pips, rules, trueCount),
     chart: null,
-    trueCount,
+    trueCount: countValue(trueCount),
   };
 }
 

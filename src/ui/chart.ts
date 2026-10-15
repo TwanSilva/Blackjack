@@ -13,8 +13,11 @@ function codeClass(code: ChartCode): string {
   }
 }
 
-/** The basic strategy overlay, rendered straight from the engine's chart. `focus` rings the current hand's cell. */
-export function chartHtml(chart: StrategyChart, focus: Advice | null): string {
+/**
+ * The basic strategy overlay, rendered straight from the engine's chart. `focus` rings the current hand's
+ * cell. `warning` is shown under the insurance line, for example when the player's rounding doesn't match.
+ */
+export function chartHtml(chart: StrategyChart, focus: Advice | null, warning: string | null = null): string {
   const ring = (sectionId: string, rowKey: string, col: number) => {
     if (!focus?.chart) return false;
     if (chart.upcards[col] !== focus.upcard || rowKey !== focus.chart.rowKey) return false;
@@ -53,6 +56,8 @@ export function chartHtml(chart: StrategyChart, focus: Advice | null): string {
       ${focusLine}
       ${sections}
       <p class="chart-insurance">${chart.insurance}</p>
+      <p class="small muted">${chart.insuranceStatus}</p>
+      ${warning ? `<p class="index-warning small" role="note">${icon.alert()} <span>${warning}</span></p>` : ''}
       <section class="chart-section"><h2 class="section-label">Key</h2><ul class="legend">${legend}</ul></section>
     </div>
   </div>`;

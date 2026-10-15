@@ -1,6 +1,6 @@
 import {
   type TrueCountGrade, type TrueCountQuestion, type TrueCountRounding, type TrueCountSource, ROUNDING_DESCRIPTION,
-  ROUNDING_LABEL, TRUE_COUNT_SOURCES, deckChoices, gradeTrueCount, makeTrueCountQuestion, recordSession,
+  INSURANCE_DEVIATION, ROUNDING_LABEL, TRUE_COUNT_ROUNDINGS, TRUE_COUNT_SOURCES, roundingMismatch, sourceStatus, deckChoices, gradeTrueCount, makeTrueCountQuestion, recordSession,
   recordTrueCount, signed,
 } from '../../engine';
 import { type Screen, app } from '../app';
@@ -158,12 +158,15 @@ export function trueCountScreen(opts: TrueCountOptions = {}): Screen {
   function setupView(): string {
     const sources = TRUE_COUNT_SOURCES.map((s) => optionRow('source', s.id, s.name, s.detail, s.id === app.prefs.tcSource)).join('');
     const r = app.prefs.tcRounding;
-    const rounding = pills('rounding', (Object.keys(ROUNDING_LABEL) as TrueCountRounding[]).map((k) => ({ value: k, label: ROUNDING_LABEL[k], on: k === r })), 'Rounding');
+    const rounding = pills('rounding', TRUE_COUNT_ROUNDINGS.map((k) => ({ value: k, label: ROUNDING_LABEL[k], on: k === r })), 'Rounding');
+    const mismatch = roundingMismatch(INSURANCE_DEVIATION.source, r);
     return `<main class="screen">
       ${drillHeader('True count drill', undefined, 'Back to drills')}
       <p class="small muted">True count = running count ÷ decks remaining. Positions come from a real ${app.prefs.rules.decks}-deck shoe dealt to a random point before the cut card.</p>
       <section class="block"><h2 class="section-label">Question type</h2><div class="stack">${sources}</div></section>
-      <section class="block"><h2 class="section-label">Rounding</h2>${rounding}<p class="small muted">${ROUNDING_DESCRIPTION[r]}</p></section>
+      <section class="block"><h2 class="section-label">Rounding</h2>${rounding}<p class="small muted">${ROUNDING_DESCRIPTION[r]} Decks remaining are rounded to the nearest half deck first.</p>
+        ${mismatch ? `<p class="index-warning small" role="note">${icon.alert()} <span>${mismatch}</span></p>` : ''}
+        <p class="small muted">Index numbers: ${sourceStatus(INSURANCE_DEVIATION.source)}</p></section>
       <div class="bottom"><button class="btn-primary" data-act="start">Start · ${QUESTIONS} questions</button></div>
     </main>`;
   }

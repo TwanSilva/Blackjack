@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   type Card, type Rank, CountTracker, DEFAULT_RULES, HI_LO, RANKS, SUITS, Shoe, buildCountSequence, buildDecks,
-  countValue, deckChoices, deckSum, estimateDecks, explainTrueCount, gradeTrueCount, handValue, isBalanced,
+  countValue, deckChoices, parseRounding, roundDecks, roundTrueCount, TRUE_COUNT_ROUNDINGS, deckSum, estimateDecks, explainTrueCount, gradeTrueCount, handValue, isBalanced,
   makeTrueCountQuestion, runningCount, scoreLearning, scoreTest, systemHint, trueCount,
 } from '../src/engine';
 
@@ -62,12 +62,12 @@ describe('true count', () => {
     expect(trueCount(5, 2, 'floor')).toBe(2);
     expect(trueCount(-5, 2, 'floor')).toBe(-3);
     expect(trueCount(-5, 2, 'truncate')).toBe(-2);
-    expect(trueCount(-5, 2, 'round')).toBe(-3);
-    expect(trueCount(11, 4, 'round')).toBe(3);
+    expect(trueCount(-5, 2, 'nearest')).toBe(-3);
+    expect(trueCount(11, 4, 'nearest')).toBe(3);
     expect(trueCount(-1, 4, 'truncate')).toBe(0);
     expect(Object.is(trueCount(-1, 4, 'truncate'), -0)).toBe(false);
-    // 2.1 / 0.7 = 2.9999999999999996 in floating point; it must still be 3.
-    expect(trueCount(2.1, 0.7, 'floor')).toBe(3);
+    // 2.1 / 0.7 = 2.9999999999999996 in floating point; rounding must still give 3.
+    expect(roundTrueCount(2.1 / 0.7, 'floor')).toBe(3);
   });
 
   test('decks remaining to the half deck', () => {
@@ -75,11 +75,53 @@ describe('true count', () => {
     expect(estimateDecks(208)).toBe(4);
     expect(estimateDecks(10)).toBe(0.5);
     expect(estimateDecks(0)).toBe(0.5);
+    expect(roundDecks(3.46)).toBe(3.5);
+    expect(roundDecks(2.74)).toBe(2.5);
+    expect(roundDecks(2.75)).toBe(3);
+    expect(roundDecks(0.1)).toBe(0.5);
+  });
+
+  test('stored rounding values: the old name round maps to nearest', () => {
+    expect(parseRounding('round')).toBe('nearest');
+    expect(parseRounding('truncate')).toBe('truncate');
+    expect(parseRounding('nonsense')).toBe('floor');
+    expect(parseRounding(undefined)).toBe('floor');
   });
 
   test('explanation states the sum', () => {
     expect(explainTrueCount(7, 3.5, 'floor')).toBe('+7 ÷ 3.5 decks = +2.0, rounded down: +2.');
     expect(explainTrueCount(-5, 2, 'floor')).toBe('−5 ÷ 2 decks = −2.5, rounded down: −3.');
+  });
+});
+
+describe('true count cases from the spec', () => {
+  test('running count +7, 3 decks left: true count 2', () => {
+    for (const r of TRUE_COUNT_ROUNDINGS) expect(trueCount(7, 3, r), r).toBe(2);
+  });
+
+  test('running count −3, 2 decks left: floor gives −2, truncate gives −1', () => {
+    expect(trueCount(-3, 2, 'floor')).toBe(-2);
+    expect(trueCount(-3, 2, 'truncate')).toBe(-1);
+    expect(trueCount(-3, 2, 'nearest')).toBe(-2); // halves away from zero
+  });
+
+  test('running count +5, 2.5 decks left: true count 2', () => {
+    for (const r of TRUE_COUNT_ROUNDINGS) expect(trueCount(5, 2.5, r), r).toBe(2);
+  });
+
+  test('a running count of exactly 0 always gives a true count of 0', () => {
+    for (const r of TRUE_COUNT_ROUNDINGS) {
+      for (let cards = 1; cards <= 416; cards++) {
+        const tc = trueCount(0, cards / 52, r);
+        expect(Object.is(tc, 0), `${r}, ${cards} cards`).toBe(true); // exactly 0, never −0
+      }
+    }
+  });
+
+  test('decks are rounded to the nearest half deck before dividing', () => {
+    // 2.2 decks rounds to 2, so +6 ÷ 2 = 3. Dividing by 2.2 first would give 2.73, which floors to 2.
+    expect(trueCount(6, 2.2, 'floor')).toBe(3);
+    expect(explainTrueCount(6, 2.2, 'floor')).toBe('+6 ÷ 2 decks = +3.0, rounded down: +3.');
   });
 });
 
@@ -142,9 +184,10 @@ describe('true count drill', () => {
     }
   });
 
-  test('cards-remaining questions use the exact figure', () => {
+  test('cards-remaining questions divide by the half-deck figure', () => {
     const q = makeTrueCountQuestion('cards', DEFAULT_RULES, 'floor', seeded(77));
-    expect(q.decksForAnswer).toBeCloseTo(q.cardsRemaining / 52);
+    expect(q.decksForAnswer).toBe(estimateDecks(q.cardsRemaining));
+    expect(gradeTrueCount(q, q.answer).explanation).toContain('to the nearest half deck');
     expect(gradeTrueCount(q, q.answer).correct).toBe(true);
     expect(gradeTrueCount(q, q.answer + 1).correct).toBe(false);
   });

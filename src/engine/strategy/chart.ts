@@ -6,6 +6,7 @@ import {
   hardClass, pairClass, rowLabel, softClass,
 } from './classes';
 import { type OptionEval, evaluateClass } from './evaluate';
+import { INSURANCE_DEVIATION, type IndexSource, sourceStatus } from './deviations';
 import { type Advice, INSURANCE_INDEX, adviseClass } from './oracle';
 
 export type PlayCode = 'H' | 'S' | 'D' | 'Ds';
@@ -44,6 +45,9 @@ export interface StrategyChart {
   upcards: readonly Pip[];
   sections: ChartSection[];
   insurance: string;
+  /** Where the insurance index came from, and whether it is verified. */
+  insuranceSource: IndexSource;
+  insuranceStatus: string;
   legend: { code: ChartCode; meaning: string }[];
 }
 
@@ -172,6 +176,8 @@ export function buildChart(rules: Rules): StrategyChart {
       },
     ],
     insurance: `Insurance: don’t take it (the count can change this at true count +${INSURANCE_INDEX} or higher)`,
+    insuranceSource: INSURANCE_DEVIATION.source,
+    insuranceStatus: `Index +${INSURANCE_INDEX}: ${sourceStatus(INSURANCE_DEVIATION.source)}`,
     legend: legendCodes.map((code) => ({ code, meaning: CODE_MEANING[code] })),
   };
   chartCache.set(key, chart);
