@@ -26,3 +26,6 @@ export * from './betting/spread';
 export * from './betting/edge';
 export * from './table/game';
 export * from './betting/betDrill';
+export * from './progress/path';
+export * from './progress/onboarding';
+export * from './learn/lessons';

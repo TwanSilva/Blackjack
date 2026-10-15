@@ -2,7 +2,7 @@
 
 A personal blackjack trainer that runs in the browser. Spec: `UX Blackjack.md` (rules, strategy) and `UI Blackjack.md` (looks).
 
-Built so far: build steps 1 to 7.
+Built: all 8 build steps.
 
 1. **Game engine** in `src/engine/`: cards, shoe with cut card, hand values, dealer play (H17/S17), available actions, payouts. No UI code.
 2. **Strategy oracle** in `src/engine/strategy/`: `bestPlay(hand, upcard, rules, trueCount?)` returns the best action and the EV of every allowed option.
@@ -24,6 +24,15 @@ Built so far: build steps 1 to 7.
    - **Edge and risk:** the player's edge at each count comes from the EV engine on the shoe at that count. Combined with how often each count comes up in dealt shoes, it gives the expected result, swings and risk of ruin for the spread and bankroll. All of these are labelled as estimates.
    - **`TableGame`:** a full table with a real shoe and cut card, other players on basic strategy, insurance, the dealer peek, splits, doubles and surrender. Every bet, play, insurance decision and count check is graded at the true count. It also has hints, a pressure mode (decision clock, chatter, faster dealing), a tilt guard and a session summary.
    - **Cross-check:** flat basic strategy over 4,000,000 table rounds returned −0.672% ± 0.057%. The EV engine says −0.568%.
+
+8. **Onboarding, learning path and polish.**
+   - **Onboarding:** 10 skippable questions with three "why this matters" screens, ending with a starting stage and a recommended path (`src/engine/progress/onboarding.ts`).
+   - **Learning path:** six stages (`path.ts`) with plain targets and a status of mastered, %, up next, locked or skipped. Any stage can be opened at any time.
+   - **Start here:** lessons whose quiz answers come from the game engine (`src/engine/learn/lessons.ts`).
+   - **Chart explorer:** tap any cell for its reason and EVs, or hide the chart and quiz yourself.
+   - **Tabs:** Learn, Drill, Stats, Settings.
+   - **Settings:** rules and presets, including the unverified "My casino" preset (Casino da Póvoa) with its visit checklist, true count rounding, reduce motion, high contrast, text size, sound and vibration.
+   - **Offline:** a service worker in production builds.
 
 The UI is split into `src/ui/app.ts` (the shell: chart overlay, keys, pausing) and one file per screen in `src/ui/screens/`. Opening the chart, or switching away from the tab, pauses any running drill.
 

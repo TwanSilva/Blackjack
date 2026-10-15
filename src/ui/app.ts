@@ -43,6 +43,8 @@ export const app = {
   home: (() => { throw new Error('home not set'); }) as () => Screen,
   /** Set by main.ts: the screens behind the bottom tab bar. */
   tabs: {} as Record<string, () => Screen>,
+  /** The tab the player last opened; "back" from a drill returns there. */
+  lastTab: 'learn',
 
   setPrefs(patch: Partial<Prefs>): void {
     app.prefs = { ...app.prefs, ...patch };
@@ -56,8 +58,25 @@ export const app = {
     window.scrollTo(0, 0);
   },
 
+  /** Back to the tab the player came from (Learn the first time). */
   goHome(): void {
-    app.go(app.home());
+    const tab = app.tabs[app.lastTab];
+    app.go(tab ? tab() : app.home());
+  },
+
+  goTab(id: string): void {
+    if (!app.tabs[id]) return;
+    app.lastTab = id;
+    app.go(app.tabs[id]());
+  },
+
+  /** Applies display settings: reduce motion, high contrast and text size. */
+  applyDisplay(): void {
+    const d = app.prefs.display;
+    const html = document.documentElement;
+    html.classList.toggle('reduce-motion', d.reduceMotion);
+    html.classList.toggle('high-contrast', d.highContrast);
+    html.dataset.text = d.textSize;
   },
 
   render(): void {
@@ -66,8 +85,11 @@ export const app = {
     current.mounted?.(root);
   },
 
+  /** Screen-reader announcement. "Correct…" and "Not quite…" also give the sound and vibration feedback. */
   announce(text: string): void {
     live.textContent = text;
+    const kind = text.startsWith('Correct') ? 'right' : text.startsWith('Not quite') ? 'wrong' : null;
+    if (kind) feedback(kind);
   },
 
   get chartOpen(): boolean {
@@ -106,7 +128,7 @@ document.addEventListener('click', (e) => {
   if (!el || (el as HTMLButtonElement).disabled) return;
   const act = el.dataset.act!;
   if (act === 'open-chart') app.openChart();
-  else if (act === 'tab' && !chartOpen && app.tabs[el.dataset.value!]) app.go(app.tabs[el.dataset.value!]());
+  else if (act === 'tab' && !chartOpen) app.goTab(el.dataset.value!);
   else if (act === 'close-chart') app.closeChart();
   else if (!chartOpen) current?.click?.(act, el);
 });
@@ -139,3 +161,29 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) current?.pause?.();
   else if (!chartOpen) current?.resume?.();
 });
+
+// ---------- Sound and vibration ----------
+
+let audio: AudioContext | null = null;
+
+/** A short tone (higher for right) and a short buzz, each only if switched on in Settings. */
+function feedback(kind: 'right' | 'wrong'): void {
+  const d = app.prefs.display;
+  if (d.haptics && 'vibrate' in navigator) {
+    try { navigator.vibrate(kind === 'right' ? 15 : [30, 40, 30]); } catch { /* not supported */ }
+  }
+  if (!d.sound) return;
+  try {
+    audio ??= new AudioContext();
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.frequency.value = kind === 'right' ? 880 : 220;
+    gain.gain.setValueAtTime(0.08, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.18);
+    osc.connect(gain).connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime + 0.2);
+  } catch {
+    // Audio unavailable: silent.
+  }
+}

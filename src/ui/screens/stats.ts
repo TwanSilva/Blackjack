@@ -123,7 +123,7 @@ export function statsScreen(): Screen {
   function history(): string {
     const list = [...app.progress.sessions].reverse().slice(0, 15);
     if (!list.length) return '<p class="small muted">No sessions yet.</p>';
-    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count', deviation: 'Play the count', bet: 'Bet sizing', table: 'Table' } as const;
+    const kind = { strategy: 'Strategy', count: 'Count', true: 'True count', deviation: 'Play the count', bet: 'Bet sizing', table: 'Table', lesson: 'Lesson' } as const;
     return `<table class="history"><thead><tr><th>Date</th><th>Drill</th><th class="num">Score</th></tr></thead><tbody>${list.map((s) =>
       `<tr><td>${day(s.at)}</td><td>${kind[s.kind]} · ${s.label}</td><td class="num">${s.kind === 'count' && s.total === 1 ? (s.correct ? 'Right' : 'Wrong') : `${s.correct}/${s.total}`}</td></tr>`).join('')}</tbody></table>`;
   }

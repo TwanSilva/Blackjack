@@ -1,6 +1,6 @@
 import {
   type BetSpread, type CountMode, type CountVariant, type DrillFilter, type Progress, type Rules, type TrueCountRounding,
-  type TrueCountSource, DEFAULT_RULES, DEFAULT_SPREAD, DEFAULT_UNIT_POTATOES, validateSpread, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress, parseRounding,
+  type OnboardingAnswers, type StageId, type TrueCountSource, DEFAULT_RULES, DEFAULT_SPREAD, DEFAULT_UNIT_POTATOES, validateSpread, DEFAULT_TC_ROUNDING, emptyProgress, parseProgress, parseRounding,
 } from '../engine';
 
 const KEY = 'bj-trainer:v1';
@@ -18,6 +18,40 @@ export interface Prefs {
   unitPotatoes: number;
   bankrollSize: BankrollSize;
   table: TablePrefs;
+  profile: Profile;
+  display: DisplayPrefs;
+  myCasino: MyCasino;
+}
+
+export interface Profile {
+  onboarded: boolean;
+  answers: OnboardingAnswers;
+  startStage: StageId;
+}
+
+export type TextSize = 'normal' | 'large' | 'larger';
+export interface DisplayPrefs {
+  reduceMotion: boolean;
+  textSize: TextSize;
+  highContrast: boolean;
+  sound: boolean;
+  haptics: boolean;
+}
+
+export type ShuffleMethod = 'unknown' | 'hand' | 'machine' | 'continuous';
+/**
+ * The player's own casino (Casino da Póvoa by default). Unverified until every rule has been checked at the
+ * table in person. Editing a rule after that makes it unverified again.
+ */
+export interface MyCasino {
+  name: string;
+  rules: Rules;
+  /** Checklist items confirmed at the table, by id. */
+  checked: Record<string, boolean>;
+  tableMin: number | null;
+  tableMax: number | null;
+  shuffle: ShuffleMethod;
+  verified: boolean;
 }
 
 export type BankrollSize = 'small' | 'medium' | 'large';
@@ -44,6 +78,11 @@ export const DEFAULT_PREFS: Prefs = {
   unitPotatoes: DEFAULT_UNIT_POTATOES,
   bankrollSize: 'medium',
   table: { others: 2, hints: false, pressure: false, countCheckEvery: 6 },
+  profile: { onboarded: false, answers: {}, startStage: 'start' },
+  display: { reduceMotion: false, textSize: 'normal', highContrast: false, sound: false, haptics: true },
+  myCasino: {
+    name: 'Casino da Póvoa', rules: { ...DEFAULT_RULES }, checked: {}, tableMin: null, tableMax: null, shuffle: 'unknown', verified: false,
+  },
 };
 
 export function load(): Prefs {
@@ -58,12 +97,15 @@ export function load(): Prefs {
         tcRounding: parseRounding(parsed.tcRounding),
         spread: parsed.spread && validateSpread(parsed.spread).length === 0 ? parsed.spread : DEFAULT_PREFS.spread,
         table: { ...DEFAULT_PREFS.table, ...parsed.table },
+        profile: { ...DEFAULT_PREFS.profile, ...parsed.profile },
+        display: { ...DEFAULT_PREFS.display, ...parsed.display },
+        myCasino: { ...DEFAULT_PREFS.myCasino, ...parsed.myCasino, rules: { ...DEFAULT_RULES, ...parsed.myCasino?.rules } },
       };
     }
   } catch {
     // Storage blocked or corrupt: fall back to defaults.
   }
-  return { ...DEFAULT_PREFS, rules: { ...DEFAULT_RULES }, spread: structuredClone(DEFAULT_PREFS.spread), table: { ...DEFAULT_PREFS.table } };
+  return structuredClone(DEFAULT_PREFS);
 }
 
 export function save(prefs: Prefs): void {

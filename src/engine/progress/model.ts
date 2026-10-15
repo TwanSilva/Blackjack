@@ -34,7 +34,7 @@ export interface MistakeRecord {
   lossPer100: number;
 }
 
-export type SessionKind = 'strategy' | 'count' | 'true' | 'deviation' | 'bet' | 'table';
+export type SessionKind = 'strategy' | 'count' | 'true' | 'deviation' | 'bet' | 'table' | 'lesson';
 
 export interface SessionRecord {
   at: number;
@@ -59,6 +59,16 @@ export interface CountRecord {
   timeMs: number;
 }
 
+export interface TableRecord {
+  at: number;
+  rounds: number;
+  /** Potatoes won (positive) or lost. */
+  net: number;
+  plays: Tally;
+  bets: Tally;
+  counts: Tally;
+}
+
 export interface Tally {
   attempts: number;
   correct: number;
@@ -75,6 +85,10 @@ export interface Progress {
   deviations: Record<string, Tally>;
   /** Bet sizing answers, from the bet drill and the table. */
   bets: Tally & { over: number; under: number };
+  /** "Start here" quiz answers. */
+  lessons: Tally;
+  /** One entry per table session, newest last. */
+  tables: TableRecord[];
   streak: { current: number; best: number };
   /** Strategy decision time, for speed stats and time estimates. */
   decisionTime: { totalMs: number; n: number };
@@ -103,6 +117,8 @@ export function emptyProgress(): Progress {
     trueCounts: {},
     deviations: {},
     bets: { attempts: 0, correct: 0, over: 0, under: 0 },
+    lessons: { attempts: 0, correct: 0 },
+    tables: [],
     streak: { current: 0, best: 0 },
     decisionTime: { totalMs: 0, n: 0 },
   };
@@ -159,6 +175,20 @@ export function recordSession(p: Progress, s: SessionRecord): void {
 
 export function recordCountRun(p: Progress, r: CountRecord): void {
   pushCapped(p.counts, r, MAX_COUNT_RUNS);
+}
+
+export function recordLesson(p: Progress, correct: boolean): void {
+  p.lessons.attempts++;
+  if (correct) p.lessons.correct++;
+}
+
+export function recordTable(p: Progress, t: TableRecord): void {
+  pushCapped(p.tables, t, MAX_SESSIONS);
+}
+
+/** Potatoes won or lost over every table session. */
+export function potatoesNet(p: Progress): number {
+  return p.tables.reduce((s, t) => s + t.net, 0);
 }
 
 export function recordBet(p: Progress, verdict: 'right' | 'over' | 'under'): void {
@@ -321,6 +351,8 @@ export function parseProgress(json: unknown): Progress {
     trueCounts: isObj(json.trueCounts) ? (json.trueCounts as Progress['trueCounts']) : {},
     deviations: isObj(json.deviations) ? (json.deviations as Progress['deviations']) : {},
     bets: isObj(json.bets) ? (json.bets as unknown as Progress['bets']) : base.bets,
+    lessons: isObj(json.lessons) ? (json.lessons as unknown as Tally) : base.lessons,
+    tables: Array.isArray(json.tables) ? (json.tables as TableRecord[]) : [],
     streak: isObj(json.streak) ? (json.streak as Progress['streak']) : base.streak,
     decisionTime: isObj(json.decisionTime) ? (json.decisionTime as Progress['decisionTime']) : base.decisionTime,
   };

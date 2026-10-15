@@ -1,6 +1,6 @@
 import {
   type Action, type Card, type TableHand, ACTION_LABEL, TableGame, cardPip, handValue, isBlackjack, pipName,
-  recordBet, recordSession, signed,
+  recordBet, recordSession, recordTable, signed,
 } from '../../engine';
 import { type Screen, app } from '../app';
 import { cardHtml, hiddenCardHtml, type CardSize } from '../cards';
@@ -159,6 +159,8 @@ export function tableScreen(opts: TableOptions = {}): Screen {
         at: Date.now(), kind: 'table', label: `${s.rounds} rounds, ${s.net >= 0 ? '+' : ''}${money(s.net)} potatoes`,
         total: s.plays.total, correct: s.plays.correct, durationMs: 0,
       });
+      const tally = (t: { total: number; correct: number }) => ({ attempts: t.total, correct: t.correct });
+      recordTable(app.progress, { at: Date.now(), rounds: s.rounds, net: s.net, plays: tally(s.plays), bets: tally(s.bets), counts: tally(s.counts) });
       app.saveProgress();
     }
     view = 'summary';

@@ -293,6 +293,34 @@ ul { list-style: none; margin: 0; padding: 0; }
 .card.deal-in { animation: deal-in 160ms ease-out backwards; }
 @keyframes deal-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 
+/* Learn, lessons, onboarding, explorer, settings */
+.path-row.locked { opacity: 0.6; }
+.path-row .good { display: inline-flex; align-items: center; gap: 4px; }
+.lesson { display: flex; flex-direction: column; gap: 12px; font-size: 17px; }
+.lesson-prompt { font-size: 18px; font-weight: 700; }
+.lesson-options { display: grid; grid-template-columns: 1fr 1fr; }
+.lesson-options .pill { white-space: normal; min-height: 52px; padding: 8px 12px; }
+.onboarding-title { font-size: 26px; }
+.why { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+.why-mark { width: 44px; height: 4px; border-radius: 2px; background: var(--text); }
+.plan .path-row { align-items: flex-start; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 16px; }
+.small-value { font-size: 20px; }
+.explorer-sticky { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 6px 0; }
+.explorer-detail { gap: 8px; padding: 14px; }
+.ev-list { display: grid; gap: 4px; }
+.ev-list li { display: flex; justify-content: space-between; }
+.warn-text { color: var(--c-stand); }
+.rule-control { display: flex; align-items: center; gap: 10px; }
+.rule-row.bare { padding: 0; border: 0; min-height: 36px; }
+.num-input { width: 96px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; min-height: 36px; padding: 0 8px; color: var(--text); font: inherit; }
+.check { width: 22px; height: 22px; accent-color: var(--correct); }
+
+/* Display settings */
+html[data-text="large"] body { zoom: 1.12; }
+html[data-text="larger"] body { zoom: 1.25; }
+html.high-contrast { --muted: #c4c4cc; --border: #55555c; --disabled: #8a8a92; }
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation: none !important; transition: none !important; }
+
 /* Index rounding warning */
 .index-warning {
   display: flex; gap: 8px; align-items: flex-start; color: var(--text);
